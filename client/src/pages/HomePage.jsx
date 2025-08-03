@@ -19,7 +19,6 @@ export default function LandingPage() {
         <Testimonials />
         <CTA />
       </main>
-      <Footer />
     </>
   );
 }

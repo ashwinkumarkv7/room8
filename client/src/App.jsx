@@ -8,7 +8,9 @@ import Footer from './components/Footer/Footer';
 // Import all page components
 import HomePage from './pages/HomePage';
 import BrowseRoomsPage from './pages/BrowseRoomsPage';
-import BrowseRoommatesPage from './pages/BrowseRoommatesPage'; // The new page
+import BrowseRoommatesPage from './pages/BrowseRoommatesPage';
+import SignupPage from './pages/SignupPage';
+import LoginPage from './pages/LoginPage'; // <-- Import the new Login page
 
 function App() {
   return (
@@ -27,6 +29,12 @@ function App() {
           
           {/* Route for finding roommates */}
           <Route path="/browse-roommates" element={<BrowseRoommatesPage />} />
+          
+          {/* Route for the signup page */}
+          <Route path="/signup" element={<SignupPage />} />
+
+          {/* Route for the new login page */}
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
       
