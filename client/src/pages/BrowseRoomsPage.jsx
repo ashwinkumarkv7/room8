@@ -3,8 +3,6 @@ import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ResultsGrid from '../components/ResultsGrid/ResultsGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
 
-// --- 1. Updated Sample Data with More Properties ---
-// We need to add properties like roomType, furnishing, petFriendly, etc., to filter by them.
 const DUMMY_LISTINGS = [
   {
     id: 1,
@@ -82,8 +80,6 @@ export default function BrowseRoomsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
 
-  // --- 2. Added Filtering Logic ---
-  // This useEffect hook runs every time the filters or search query change.
   useEffect(() => {
     let filteredListings = DUMMY_LISTINGS;
 
@@ -93,6 +89,14 @@ export default function BrowseRoomsPage() {
         listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.city.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // --- NEW: Filter by Location from the sidebar ---
+    if (filters.location) {
+      filteredListings = filteredListings.filter(listing =>
+        listing.city.toLowerCase().includes(filters.location.toLowerCase()) ||
+        listing.area.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
@@ -120,10 +124,9 @@ export default function BrowseRoomsPage() {
       filteredListings = filteredListings.filter(listing => listing.verified === true);
     }
 
-    // Update the state with the final filtered list
     setListings(filteredListings);
 
-  }, [filters, searchQuery]); // The dependency array ensures this runs on change
+  }, [filters, searchQuery]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
