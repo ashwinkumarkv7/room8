@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+// 1. Import useLocation to read navigation state
+import { useLocation } from 'react-router-dom';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ResultsGrid from '../components/ResultsGrid/ResultsGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
@@ -80,10 +82,24 @@ export default function BrowseRoomsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
 
+  // 2. Get the current location object from React Router
+  const location = useLocation();
+
+  // 3. This new useEffect runs when the page loads to check for passed state
+  useEffect(() => {
+    if (location.state && location.state.location) {
+      // If a location was passed from the Hero search, update the filter
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        location: location.state.location
+      }));
+    }
+  }, [location.state]);
+
+  // This useEffect handles all the filtering logic
   useEffect(() => {
     let filteredListings = DUMMY_LISTINGS;
 
-    // Filter by Search Query
     if (searchQuery) {
       filteredListings = filteredListings.filter(listing =>
         listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,7 +108,6 @@ export default function BrowseRoomsPage() {
       );
     }
     
-    // --- NEW: Filter by Location from the sidebar ---
     if (filters.location) {
       filteredListings = filteredListings.filter(listing =>
         listing.city.toLowerCase().includes(filters.location.toLowerCase()) ||
@@ -100,20 +115,16 @@ export default function BrowseRoomsPage() {
       );
     }
 
-    // Filter by Budget
     filteredListings = filteredListings.filter(listing => listing.price <= filters.budget);
 
-    // Filter by Room Type
     if (filters.roomType !== 'any') {
       filteredListings = filteredListings.filter(listing => listing.roomType === filters.roomType);
     }
 
-    // Filter by Furnishing
     if (filters.furnishing !== 'any') {
       filteredListings = filteredListings.filter(listing => listing.furnishing === filters.furnishing);
     }
 
-    // Filter by Options (checkboxes)
     if (filters.petFriendly) {
       filteredListings = filteredListings.filter(listing => listing.petFriendly === true);
     }

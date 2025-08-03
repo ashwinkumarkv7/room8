@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+// 1. Import the useLocation hook
+import { useLocation } from 'react-router-dom';
 import RoommateFilterSidebar from '../components/RoommateFilterSidebar/RoommateFilterSidebar';
 import RoommateGrid from '../components/RoommateGrid/RoommateGrid';
-import SearchBar from '../components/SearchBar/SearchBar'; // Reusing the search bar
+import SearchBar from '../components/SearchBar/SearchBar';
 
 // --- Sample Data for potential roommates ---
 const DUMMY_ROOMMATES = [
@@ -43,11 +45,25 @@ export default function BrowseRoommatesPage() {
     gender: 'any'
   });
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // 2. Get the location object from React Router
+  const location = useLocation();
 
+  // 3. This new useEffect checks for passed state when the page loads
+  useEffect(() => {
+    if (location.state && location.state.location) {
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        location: location.state.location
+      }));
+    }
+  }, [location.state]);
+
+
+  // This useEffect handles all the filtering logic
   useEffect(() => {
     let filteredList = DUMMY_ROOMMATES;
 
-    // Filter by search query (name, job, location)
     if (searchQuery) {
       filteredList = filteredList.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -56,7 +72,6 @@ export default function BrowseRoommatesPage() {
       );
     }
     
-    // Filter by sidebar filters
     if (filters.location) {
         filteredList = filteredList.filter(p => p.location.toLowerCase().includes(filters.location.toLowerCase()));
     }
