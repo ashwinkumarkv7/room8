@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo/room8-logo.png'; // Make sure this path is correct
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // <-- 1. Import the useAuth hook
+import logo from '../assets/logo/room8-logo.png';
 
 // --- Reusable Input Field Component ---
 const InputField = ({ id, label, type, value, onChange, required = true }) => (
@@ -30,17 +31,46 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth(); // <-- 2. Get the login function from our context
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt with:', formData);
-    // Add your authentication logic here
-    alert('Login button clicked! Check the console.');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // --- SUCCESS ---
+      // 3. Call the context's login function instead of setting localStorage directly.
+      // This will update the global state and trigger the navbar to re-render.
+      login(data);
+      navigate('/'); // Redirect to homepage
+
+    } catch (err) {
+      setLoading(false);
+      setError(err.message);
+      console.error('Login failed:', err.message);
+    }
   };
 
   return (
@@ -53,13 +83,14 @@ export default function LoginPage() {
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
           <Link to="/signup" className="font-medium text-[#6b2184] hover:text-purple-500">
-            start your 14-day free trial
+            create a new account
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && <div className="mb-4 text-center text-sm text-red-600 bg-red-100 p-3 rounded-md">{error}</div>}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <InputField id="email" label="Email address" type="email" value={formData.email} onChange={handleInputChange} />
             <InputField id="password" label="Password" type="password" value={formData.password} onChange={handleInputChange} />
@@ -75,8 +106,8 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#6b2184] hover:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184]">
-                Sign in
+              <button type="submit" disabled={loading} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#6b2184] hover:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184] disabled:opacity-50">
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
