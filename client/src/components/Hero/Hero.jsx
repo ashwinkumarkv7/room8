@@ -1,22 +1,14 @@
 import React, { useState } from 'react';
-// 1. Import the useNavigate hook from React Router
 import { useNavigate } from 'react-router-dom';
 import bannerImage from '../../assets/images/banner.png';
 
 export default function Hero() {
-  // 2. Add state to manage the form inputs
   const [location, setLocation] = useState('');
-  const [searchType, setSearchType] = useState('room'); // 'room' or 'roommate'
-  
-  // 3. Initialize the navigate function
+  const [searchType, setSearchType] = useState('room');
   const navigate = useNavigate();
 
-  // 4. Create a handler for the search button click
   const handleSearch = () => {
-    // Determine the target page based on the dropdown
     const targetPath = searchType === 'room' ? '/browse-rooms' : '/browse-roommates';
-
-    // Navigate to the target page, passing the location in the state
     navigate(targetPath, { state: { location: location } });
   };
 
@@ -25,7 +17,9 @@ export default function Hero() {
       style={{ backgroundImage: `url(${bannerImage})` }}
       className="relative bg-cover bg-center min-h-screen flex items-center text-white"
     >
-      <div className="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+      {/* --- 1. Changed the overlay from black to a semi-transparent purple gradient --- */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#6b2184]/70 to-[#6b2184]/50" aria-hidden="true"></div>
+      
       <div className="relative z-10 container mx-auto px-4 py-16">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Find the Right Room, with the Right Roommate.</h1>
@@ -34,7 +28,6 @@ export default function Hero() {
           <div className="bg-white rounded-lg p-4 shadow-lg">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                {/* 5. Connect the input to our state */}
                 <input 
                   type="text" 
                   placeholder="Enter location (e.g., Kochi)" 
@@ -44,7 +37,6 @@ export default function Hero() {
                 />
               </div>
               <div className="flex-1">
-                {/* 6. Connect the select dropdown to our state */}
                 <select 
                   value={searchType}
                   onChange={(e) => setSearchType(e.target.value)}
@@ -54,7 +46,6 @@ export default function Hero() {
                   <option value="roommate">Looking for Roommate</option>
                 </select>
               </div>
-              {/* 7. Trigger our handler on button click */}
               <button 
                 onClick={handleSearch}
                 className="bg-[#6b2184] text-white px-6 py-3 rounded-lg hover:brightness-90 transition-all font-medium"

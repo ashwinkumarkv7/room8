@@ -1,64 +1,80 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import logo from '../../assets/logo/room8-logo.png';
-import { Bars3Icon } from '@heroicons/react/24/solid';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
-export default function Navbar() {
+// Custom NavLink component for the underline hover effect
+const CustomNavLink = ({ to, children }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `relative font-bold tracking-tight transition-colors duration-300 ${
+        isActive ? 'text-[#6b2184]' : 'text-gray-500 hover:text-[#6b2184]'
+      } after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-[#6b2184] after:transition-all after:duration-300 hover:after:w-full`
+    }
+  >
+    {children}
+  </NavLink>
+);
+
+export default function ModernNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Helper function to close the mobile menu when a link is clicked
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <nav className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
-        {/* Left Section (Logo) */}
-        <div className="flex-1 flex justify-start">
+        {/* Logo */}
+        <div className="flex-shrink-0">
           <Link to="/" onClick={handleLinkClick}>
             <img src={logo} alt="Room8 Logo" className="h-10 w-auto" />
           </Link>
         </div>
 
-        {/* Center Section (Nav Links) */}
-        <div className="hidden md:flex space-x-8">
-          <Link to="/" className="text-[#6b2184] font-semibold">Home</Link>
-          <Link to="/browse-rooms" className="text-gray-800 hover:text-[#6b2184] transition-colors duration-300">Browse Rooms</Link>
-          <Link to="/browse-roommates" className="text-gray-800 hover:text-[#6b2184] transition-colors duration-300">Browse Roommates</Link>
-          <Link to="/about" className="text-gray-800 hover:text-[#6b2184] transition-colors duration-300">About</Link>
+        {/* Desktop Navigation Links (Centered) */}
+        <div className="hidden md:flex flex-1 justify-center items-center space-x-8">
+          <CustomNavLink to="/">Home</CustomNavLink>
+          <CustomNavLink to="/browse-rooms">Browse Rooms</CustomNavLink>
+          {/* --- 1. Added the "Browse Roommates" link back --- */}
+          <CustomNavLink to="/browse-roommates">Browse Roommates</CustomNavLink>
+          <CustomNavLink to="/about">About</CustomNavLink>
         </div>
 
-        {/* Right Section (Buttons & Mobile Toggle) */}
-        <div className="flex-1 flex justify-end">
-          <div className="flex items-center space-x-4">
-            {/* Desktop Buttons */}
-            <div className="hidden md:flex items-center space-x-2">
-              {/* --- 1. Changed this button to a Link component --- */}
-              <Link to="/login" className="bg-[#6b2184] text-white px-5 py-2 rounded-full hover:brightness-90 transition-all font-semibold">Login</Link>
-              <Link to="/signup" className="border border-[#6b2184] text-[#6b2184] px-5 py-2 rounded-full hover:bg-[#6b2184] hover:text-white transition-colors font-semibold">Sign Up</Link>
-            </div>
-            
-            {/* Mobile Menu Button */}
-            <button className="md:hidden text-gray-800" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <Bars3Icon className="h-6 w-6" />
-            </button>
-          </div>
+        {/* Login and Mobile Toggle */}
+        <div className="hidden md:flex flex-shrink-0 items-center space-x-4">
+          <Link to="/login" className="font-bold text-gray-800 hover:text-[#6b2184] transition-colors tracking-tight">
+            Login
+          </Link>
+          <Link to="/signup" className="bg-[#6b2184] text-white px-5 py-2 rounded-full hover:brightness-90 transition-all font-semibold">
+            Sign Up
+          </Link>
+        </div>
+        
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-800">
+            {isMenuOpen ? <XMarkIcon className="h-7 w-7" /> : <Bars3Icon className="h-7 w-7" />}
+          </button>
         </div>
       </div>
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white px-4 pt-2 pb-4 space-y-2">
-          <Link to="/" className="block text-gray-800 hover:text-[#6b2184] p-2" onClick={handleLinkClick}>Home</Link>
-          <Link to="/browse-rooms" className="block text-gray-800 hover:text-[#6b2184] p-2" onClick={handleLinkClick}>Browse Rooms</Link>
-          <Link to="/browse-roommates" className="block text-gray-800 hover:text-[#6b2184] p-2" onClick={handleLinkClick}>Browse Roommates</Link>
-          <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] p-2" onClick={handleLinkClick}>About</Link>
-          <div className="border-t my-2"></div>
-          {/* --- 2. Also changed the mobile button to a Link component --- */}
-          <Link to="/login" onClick={handleLinkClick} className="block w-full text-center mt-2 bg-[#6b2184] text-white px-4 py-2 rounded-full hover:brightness-90 transition-all">Login</Link>
-          <Link to="/signup" onClick={handleLinkClick} className="block w-full text-center mt-2 border border-[#6b2184] text-[#6b2184] px-4 py-2 rounded-full hover:bg-[#6b2184] hover:text-white transition-colors">Sign Up</Link>
+        <div className="md:hidden bg-white px-6 pb-6 pt-2 space-y-4">
+          <Link to="/" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Home</Link>
+          <Link to="/browse-rooms" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Rooms</Link>
+          {/* --- 2. Also added the link back to the mobile menu --- */}
+          <Link to="/browse-roommates" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Roommates</Link>
+          <Link to="/add-room" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Add Room</Link>
+          <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>About</Link>
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            <Link to="/login" onClick={handleLinkClick} className="block w-full text-center bg-[#6b2184] text-white px-4 py-2 rounded-full font-bold hover:brightness-90 transition-all">Login</Link>
+            <Link to="/signup" onClick={handleLinkClick} className="block w-full text-center border border-[#6b2184] text-[#6b2184] px-4 py-2 rounded-full font-bold hover:bg-[#6b2184] hover:text-white transition-colors">Sign Up</Link>
+          </div>
         </div>
       )}
     </nav>
