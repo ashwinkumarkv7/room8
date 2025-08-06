@@ -1,17 +1,15 @@
-// --- User API Routes ---
 const express = require('express');
-const { registerUser, loginUser } = require('../controllers/userController');
+const {
+  registerUser,
+  loginUser,
+  updateUserProfile,
+} = require('../controllers/userController');
+const { protect } = require('../middleware/authMiddleware');
+
 const router = express.Router();
 
-// @route   POST /api/users/register
-// @desc    Register a new user
-// @access  Public
 router.post('/register', registerUser);
-
-// @route   POST /api/users/login
-// @desc    Authenticate user & get token
-// @access  Public
 router.post('/login', loginUser);
-
+router.route('/profile').put(protect, updateUserProfile);
 
 module.exports = router;

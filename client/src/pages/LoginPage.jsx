@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // <-- 1. Import the useAuth hook
+import { useAuth } from '../context/AuthContext'; // 1. Import the useAuth hook
 import logo from '../assets/logo/room8-logo.png';
 
 // --- Reusable Input Field Component ---
@@ -34,7 +34,7 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // <-- 2. Get the login function from our context
+  const { login } = useAuth(); // 2. Get the login function from our context
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -61,10 +61,9 @@ export default function LoginPage() {
       }
 
       // --- SUCCESS ---
-      // 3. Call the context's login function instead of setting localStorage directly.
-      // This will update the global state and trigger the navbar to re-render.
+      // 3. Call the context's login function. This updates the global state.
       login(data);
-      navigate('/'); // Redirect to homepage
+      navigate('/discover'); // Redirect to the discovery page
 
     } catch (err) {
       setLoading(false);

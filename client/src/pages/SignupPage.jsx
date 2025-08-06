@@ -1,76 +1,70 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import for navigation after signup
-import BasicInfoStep from '../components/Signup/BasicInfoStep';
-import ProfileDetailsStep from '../components/Signup/ProfileDetailsStep';
+import React, { useState } from 'react'; // <-- Corrected this line
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo/room8-logo.png';
+import DobPicker from '../components/Signup/DobPicker';
+
+const InputField = ({ id, label, type = 'text', value, onChange }) => (
+  <div>
+    <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="mt-1">
+      <input id={id} name={id} type={type} required value={value} onChange={onChange} className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#6b2184] focus:border-[#6b2184] sm:text-sm" />
+    </div>
+  </div>
+);
 
 export default function SignupPage() {
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Basic Info
-    fullName: '', email: '', password: '', confirmPassword: '',
-    mobile: '', gender: '', dob: '',
-    // Profile Details
-    city: '', preferredLocation: '', profession: '', workplace: '',
-    budget: 15000, roomType: 'private', moveInDate: '', hobbies: [],
-    routine: 'early_bird', smoking: 'no', drinking: 'no',
-    food: 'no_preference', pets: 'no', bio: '', profilePic: null,
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    dob: '',
   });
-  const [error, setError] = useState(null); // To display error messages
-  const [loading, setLoading] = useState(false); // To show a loading state
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleNextStep = () => setStep(2);
-  const handlePrevStep = () => setStep(1);
-  
-  // --- This is the updated handleSubmit function ---
   const handleSubmit = async (e) => {
       e.preventDefault();
-      setError(null); // Clear previous errors
-      
-      // Basic validation
+      setError(null);
       if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match.");
           return;
       }
-      
-      setLoading(true); // Start loading
+      setLoading(true);
 
       try {
-        // Make the API call to your backend registration endpoint
         const response = await fetch('http://localhost:5000/api/users/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fullName: formData.fullName,
+                email: formData.email,
+                password: formData.password,
+                dob: formData.dob,
+            }),
         });
 
         const data = await response.json();
-
-        setLoading(false); // Stop loading
+        setLoading(false);
 
         if (!response.ok) {
-            // If the server responds with an error (e.g., user exists)
             throw new Error(data.message || 'Something went wrong');
         }
 
-        // --- SUCCESS ---
-        console.log('Registration successful:', data);
-        alert('Signup successful! You will now be redirected to the login page.');
-        // You can also store the user token in localStorage here
-        // localStorage.setItem('userInfo', JSON.stringify(data));
-        navigate('/login'); // Redirect to login page on success
+        login(data); 
+        navigate('/onboarding'); 
 
       } catch (err) {
-        setLoading(false); // Stop loading
+        setLoading(false);
         setError(err.message);
-        console.error('Registration failed:', err.message);
       }
   };
 
@@ -82,32 +76,29 @@ export default function SignupPage() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Step {step} of 2: {step === 1 ? 'Basic Information' : 'Profile Details'}
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-[#6b2184] hover:text-purple-500">
+            Sign in
+          </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Display any error messages here */}
           {error && <div className="mb-4 text-center text-sm text-red-600 bg-red-100 p-3 rounded-md">{error}</div>}
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            {step === 1 && (
-              <BasicInfoStep
-                formData={formData}
-                handleInputChange={handleInputChange}
-                onNext={handleNextStep}
-              />
-            )}
-            {step === 2 && (
-              <ProfileDetailsStep
-                formData={formData}
-                setFormData={setFormData}
-                handleInputChange={handleInputChange}
-                onBack={handlePrevStep}
-                isLoading={loading} // Pass loading state to disable button
-              />
-            )}
+            <InputField id="fullName" label="Full Name" value={formData.fullName} onChange={handleInputChange} />
+            <InputField id="email" label="Email address" type="email" value={formData.email} onChange={handleInputChange} />
+            <InputField id="password" label="Password" type="password" value={formData.password} onChange={handleInputChange} />
+            <InputField id="confirmPassword" label="Confirm Password" type="password" value={formData.confirmPassword} onChange={handleInputChange} />
+            <DobPicker value={formData.dob} onChange={handleInputChange} />
+            
+            <div>
+              <button type="submit" disabled={loading} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#6b2184] hover:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184] disabled:opacity-50">
+                {loading ? 'Creating Account...' : 'Create Account & Continue'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

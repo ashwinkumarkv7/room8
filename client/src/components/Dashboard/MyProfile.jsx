@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MyProfile() {
-    const [user, setUser] = useState(null);
+    const { userInfo } = useAuth(); // Get user info from context
 
-    useEffect(() => {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        if (userInfo) {
-            // In a real app, you'd fetch the full profile from your API
-            // For now, we'll use the data from localStorage
-            setUser(userInfo);
-        }
-    }, []);
-
-    if (!user) {
+    if (!userInfo) {
         return <div>Loading profile...</div>;
     }
 
     return (
         <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h2>
-            <div className="space-y-4">
+            <div className="space-y-4 text-gray-700">
                 <div>
-                    <span className="font-semibold">Full Name:</span> {user.fullName}
+                    <span className="font-semibold text-gray-900">Full Name:</span> {userInfo.fullName}
                 </div>
                 <div>
-                    <span className="font-semibold">Email:</span> {user.email}
+                    <span className="font-semibold text-gray-900">Email:</span> {userInfo.email}
                 </div>
-                {/* Add more profile fields here as needed */}
+                {/* In a real app, you would fetch and display the full profile from your API */}
                 <div className="pt-4">
                     <button className="bg-[#6b2184] text-white px-5 py-2 rounded-md hover:brightness-90 transition-all font-semibold">
                         Edit Profile (Coming Soon)

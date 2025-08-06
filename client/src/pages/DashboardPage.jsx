@@ -1,47 +1,63 @@
-import React from 'react';
-// 1. Removed unnecessary imports like 'Routes' and 'Route'
-import { NavLink, Outlet } from 'react-router-dom';
-import { UserCircleIcon, Cog6ToothIcon, BookmarkIcon } from '@heroicons/react/24/outline';
-
-// --- Reusable NavLink for the Dashboard Sidebar ---
-const DashboardNavLink = ({ to, icon: Icon, children }) => (
-    <NavLink
-        to={to}
-        end // Use 'end' to prevent parent routes from staying active on child routes
-        className={({ isActive }) =>
-            `flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                isActive ? 'bg-[#6b2184] text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`
-        }
-    >
-        <Icon className="h-5 w-5 mr-3" />
-        <span>{children}</span>
-    </NavLink>
-);
+import React, { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import DashboardSidebar from '../components/Dashboard/DashboardSidebar';
+import { BellIcon, SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="container mx-auto px-4 py-12">
-                <div className="flex flex-col md:flex-row gap-8">
-                    {/* --- Sidebar Navigation --- */}
-                    <aside className="w-full md:w-1/4 lg:w-1/5">
-                        <div className="bg-white p-4 rounded-lg shadow-sm space-y-2">
-                            <DashboardNavLink to="/dashboard" icon={UserCircleIcon}>My Profile</DashboardNavLink>
-                            <DashboardNavLink to="/dashboard/saved-items" icon={BookmarkIcon}>Saved Items</DashboardNavLink>
-                            <DashboardNavLink to="/dashboard/settings" icon={Cog6ToothIcon}>Account Settings</DashboardNavLink>
-                        </div>
-                    </aside>
+  const { userInfo } = useAuth();
+  const [isDarkMode, setIsDarkMode] = useState(false); // State for theme toggle
 
-                    {/* --- Main Content Area --- */}
-                    <main className="w-full md:w-3/4 lg:w-4/5">
-                        <div className="bg-white p-8 rounded-lg shadow-sm">
-                            {/* 2. The <Outlet> component correctly renders the nested routes defined in App.jsx */}
-                            <Outlet />
-                        </div>
-                    </main>
-                </div>
-            </div>
+  // In a real app, you would fetch user-specific data here
+  const upcomingBookingsCount = 2; // Sample data
+
+  if (!userInfo) {
+    return <div>Loading...</div>; // Or a spinner component
+  }
+
+  return (
+    <div className={`min-h-screen font-sans ${isDarkMode ? 'bg-gray-900 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Header */}
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome back, {userInfo.fullName.split(' ')[0]} 👋</h1>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              You have {upcomingBookingsCount} upcoming bookings.
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <BellIcon className="h-6 w-6" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+            </button>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              {isDarkMode ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />}
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Sidebar */}
+          <aside className="w-full lg:w-1/4 xl:w-1/5">
+            <DashboardSidebar />
+          </aside>
+
+          {/* Right Content Area */}
+          <main className="w-full lg:w-3/4 xl:w-4/5">
+            {/* The nested route components (MyProfile, etc.) will be rendered here */}
+            <Outlet />
+          </main>
         </div>
-    );
+
+        {/* Floating Action Button */}
+        <button className="fixed bottom-8 right-8 bg-[#6b2184] text-white p-4 rounded-full shadow-lg hover:bg-purple-800 transition-colors">
+          <PlusIcon className="h-6 w-6" />
+          <span className="sr-only">New Booking</span>
+        </button>
+      </div>
+    </div>
+  );
 }

@@ -1,10 +1,10 @@
 import React from 'react';
-import { PhotoIcon } from '@heroicons/react/24/solid';
+import { PhotoIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 const HOBBY_OPTIONS = ['Music', 'Reading', 'Partying', 'Cooking', 'Gaming', 'Sports', 'Travel', 'Movies'];
 
 const Section = ({ title, children }) => (
-    <div className="pt-6">
+    <div className="pt-6 border-t border-gray-200 first:pt-0 first:border-t-0">
         <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
         <div className="mt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">{children}</div>
     </div>
@@ -12,7 +12,7 @@ const Section = ({ title, children }) => (
 
 const FormField = ({ children, className = "sm:col-span-3" }) => <div className={className}>{children}</div>;
 
-export default function ProfileDetailsStep({ formData, setFormData, handleInputChange, onBack }) {
+export default function ProfileDetailsStep({ formData, setFormData, handleInputChange, handleFileChange, profilePicPreview, removeProfilePic, onBack, isLoading }) {
   const handleHobbyToggle = (hobby) => {
     setFormData(prev => ({
       ...prev,
@@ -46,15 +46,26 @@ export default function ProfileDetailsStep({ formData, setFormData, handleInputC
 
       <Section title="About You">
           <FormField className="sm:col-span-6"><label>Bio</label><textarea name="bio" rows={3} value={formData.bio} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm"></textarea></FormField>
-          <FormField className="sm:col-span-6"><label>Profile Picture</label><div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"><div className="text-center"><PhotoIcon className="mx-auto h-12 w-12 text-gray-300" /><div className="mt-4 flex text-sm leading-6 text-gray-600"><label htmlFor="profilePic" className="relative cursor-pointer rounded-md bg-white font-semibold text-[#6b2184] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#6b2184] focus-within:ring-offset-2 hover:text-purple-500"><span>Upload a file</span><input id="profilePic" name="profilePic" type="file" className="sr-only" /></label><p className="pl-1">or drag and drop</p></div><p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p></div></div></FormField>
+          <FormField className="sm:col-span-6"><label>Profile Picture</label>
+            {profilePicPreview ? (
+                <div className="mt-2 relative w-32 h-32">
+                    <img src={profilePicPreview} alt="Profile Preview" className="w-full h-full object-cover rounded-full" />
+                    <button type="button" onClick={removeProfilePic} className="absolute top-0 right-0 bg-white rounded-full p-1 text-gray-500 hover:text-red-600">
+                        <XCircleIcon className="h-6 w-6" />
+                    </button>
+                </div>
+            ) : (
+                <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"><div className="text-center"><PhotoIcon className="mx-auto h-12 w-12 text-gray-300" /><div className="mt-4 flex text-sm leading-6 text-gray-600"><label htmlFor="profilePic" className="relative cursor-pointer rounded-md bg-white font-semibold text-[#6b2184] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#6b2184] focus-within:ring-offset-2 hover:text-purple-500"><span>Upload a file</span><input id="profilePic" name="profilePic" type="file" accept="image/*" onChange={handleFileChange} className="sr-only" /></label><p className="pl-1">or drag and drop</p></div><p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p></div></div>
+            )}
+          </FormField>
       </Section>
 
-      <div className="pt-6 flex items-center justify-between">
+      <div className="pt-8 flex items-center justify-between">
         <button type="button" onClick={onBack} className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184]">
           Back
         </button>
-        <button type="submit" className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#6b2184] hover:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184]">
-          Create Account
+        <button type="submit" disabled={isLoading} className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#6b2184] hover:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6b2184] disabled:opacity-50">
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </button>
       </div>
     </>

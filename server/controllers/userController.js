@@ -1,87 +1,86 @@
-// --- User Controller Logic ---
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
-// --- Helper function to generate a JWT ---
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d', // Token will be valid for 30 days
-  });
-};
-
+const generateToken = require('../utils/generateToken');
 
 // --- 1. Register a new user ---
 const registerUser = async (req, res) => {
-  // Get all the data from the request body
-  const {
-    fullName, email, password, mobile, gender, dob,
-    city, preferredLocation, profession, workplace, budget,
-    roomType, moveInDate, hobbies, routine, smoking,
-    drinking, food, pets, bio
-  } = req.body;
+  const { fullName, email, password, dob } = req.body;
 
   try {
-    // Check if a user with this email already exists
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.status(400).json({ message: 'User already exists' });
-      return;
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create a new user document in the database
     const user = await User.create({
-        fullName, email, password, mobile, gender, dob,
-        city, preferredLocation, profession, workplace, budget,
-        roomType, moveInDate, hobbies, routine, smoking,
-        drinking, food, pets, bio
+      fullName,
+      email,
+      password,
+      dob,
     });
 
-    // If the user was created successfully...
     if (user) {
-      // ...send back the user's info and a token
       res.status(201).json({
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
+        profilePic: user.profilePic,
         token: generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error in registerUser:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-
 // --- 2. Login an existing user ---
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    try {
-        // Find the user by email
-        const user = await User.findOne({ email });
+  try {
+    const user = await User.findOne({ email });
 
-        // If user exists and the password matches...
-        if (user && (await user.matchPassword(password))) {
-            // ...send back their info and a new token
-            res.json({
-                _id: user._id,
-                fullName: user.fullName,
-                email: user.email,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+    if (user && (await user.matchPassword(password))) {
+      res.json({
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        profilePic: user.profilePic,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
     }
+  } catch (error) {
+    console.error('Error in loginUser:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
+// --- 3. Update User Profile ---
+const updateUserProfile = async (req, res) => {
+  const user = await User.findById(req.user._id);
 
-module.exports = { registerUser, loginUser };
+  if (user) {
+    user.fullName = req.body.fullName || user.fullName;
+    user.city = req.body.city || user.city;
+    // ... update other fields ...
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      token: generateToken(updatedUser._id),
+    });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
+module.exports = { registerUser, loginUser, updateUserProfile };
