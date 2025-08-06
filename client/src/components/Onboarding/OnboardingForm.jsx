@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { PhotoIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 const HOBBY_OPTIONS = ['Music', 'Reading', 'Partying', 'Cooking', 'Gaming', 'Sports', 'Travel', 'Movies'];
@@ -13,13 +14,18 @@ const Section = ({ title, children }) => (
 const FormField = ({ children, className = "sm:col-span-3" }) => <div className={className}>{children}</div>;
 
 export default function OnboardingForm({ onComplete }) {
+  const { userInfo, login: updateAuthContext } = useAuth();
   const [details, setDetails] = useState({
+    fullName: userInfo.fullName || '',
     city: '', preferredLocation: '', profession: '', workplace: '',
     budget: 15000, roomType: 'private', moveInDate: '', hobbies: [],
     routine: 'early_bird', smoking: 'no', drinking: 'no',
-    food: 'no_preference', pets: 'no', bio: '', profilePic: null,
+    food: 'no_preference', pets: 'no', bio: '',
   });
+  const [profilePicFile, setProfilePicFile] = useState(null);
   const [profilePicPreview, setProfilePicPreview] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -29,13 +35,13 @@ export default function OnboardingForm({ onComplete }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setDetails(prev => ({ ...prev, profilePic: file }));
+      setProfilePicFile(file);
       setProfilePicPreview(URL.createObjectURL(file));
     }
   };
 
   const removeProfilePic = () => {
-      setDetails(prev => ({ ...prev, profilePic: null }));
+      setProfilePicFile(null);
       setProfilePicPreview(null);
   };
   
@@ -48,25 +54,71 @@ export default function OnboardingForm({ onComplete }) {
     }));
   };
 
-  const handleSave = () => {
-      // In a real app, you would send 'details' to the backend here.
-      console.log("Saving profile details:", details);
-      onComplete(); // This tells the parent page to move to the next step.
+  const handleSave = async () => {
+      setError(null);
+      setLoading(true);
+
+      try {
+        // Step 1: Upload profile picture ONLY if a new one has been selected
+        if (profilePicFile) {
+            console.log("Attempting to upload profile picture...");
+            const formData = new FormData();
+            formData.append('profilePic', profilePicFile);
+
+            const uploadRes = await fetch('http://localhost:5000/api/upload/profile-picture', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${userInfo.token}` },
+                body: formData,
+            });
+
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.message || 'Image upload failed');
+            console.log("Profile picture uploaded successfully.");
+        }
+
+        // Step 2: Update the rest of the profile details
+        console.log("Attempting to update profile details...");
+        const profileUpdateRes = await fetch('http://localhost:5000/api/users/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userInfo.token}`,
+            },
+            body: JSON.stringify(details),
+        });
+        
+        const profileUpdateData = await profileUpdateRes.json();
+        if (!profileUpdateRes.ok) throw new Error(profileUpdateData.message || 'Failed to update profile');
+        console.log("Profile details updated successfully.");
+
+        // --- SUCCESS ---
+        updateAuthContext(profileUpdateData);
+        onComplete();
+
+      } catch (err) {
+          setError(err.message);
+          console.error("Profile update failed:", err);
+      } finally {
+          setLoading(false);
+      }
   }
 
   return (
     <>
+      {error && <div className="mb-4 text-center text-sm text-red-600 bg-red-100 p-3 rounded-md">{error}</div>}
+      
       <Section title="Location & Profession">
-        <FormField><label>Current City</label><input type="text" name="city" value={details.city} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
-        <FormField><label>Preferred Location</label><input type="text" name="preferredLocation" value={details.preferredLocation} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
-        <FormField><label>Profession</label><input type="text" name="profession" value={details.profession} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
-        <FormField><label>Workplace/College</label><input type="text" name="workplace" value={details.workplace} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Full Name</label><input type="text" name="fullName" value={details.fullName} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Current City</label><input type="text" name="city" value={details.city} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Preferred Location</label><input type="text" name="preferredLocation" value={details.preferredLocation} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Profession</label><input type="text" name="profession" value={details.profession} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Workplace/College</label><input type="text" name="workplace" value={details.workplace} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
       </Section>
 
       <Section title="Preferences">
-        <FormField><label>Budget Range (₹/month)</label><input type="number" name="budget" value={details.budget} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
-        <FormField><label>Room Type</label><select name="roomType" value={details.roomType} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm"><option>Private</option><option>Shared</option><option>1BHK</option><option>2BHK</option></select></FormField>
-        <FormField><label>Move-in Date</label><input type="date" name="moveInDate" value={details.moveInDate} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Budget Range (₹/month)</label><input type="number" name="budget" value={details.budget} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
+        <FormField><label>Room Type</label><select name="roomType" value={details.roomType} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm"><option>Private</option><option>Shared</option><option>1BHK</option><option>2BHK</option></select></FormField>
+        <FormField><label>Move-in Date</label><input type="date" name="moveInDate" value={details.moveInDate} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm" /></FormField>
       </Section>
       
       <Section title="Lifestyle & Habits">
@@ -74,7 +126,7 @@ export default function OnboardingForm({ onComplete }) {
       </Section>
 
       <Section title="About You">
-          <FormField className="sm:col-span-6"><label>Bio</label><textarea name="bio" rows={3} value={details.bio} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm"></textarea></FormField>
+          <FormField className="sm:col-span-6"><label>Bio</label><textarea name="bio" rows={3} value={details.bio} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-[#6b2184] focus:ring-[#6b2184] sm:text-sm"></textarea></FormField>
           <FormField className="sm:col-span-6"><label>Profile Picture</label>
             {profilePicPreview ? (
                 <div className="mt-2 relative w-32 h-32">
@@ -89,8 +141,8 @@ export default function OnboardingForm({ onComplete }) {
           </FormField>
       </Section>
       <div className="mt-8 flex justify-end">
-        <button onClick={handleSave} className="bg-[#6b2184] text-white px-6 py-2 rounded-md font-semibold hover:brightness-90">
-            Save & Continue
+        <button onClick={handleSave} disabled={loading} className="bg-[#6b2184] text-white px-6 py-2 rounded-md font-semibold hover:brightness-90 disabled:opacity-50">
+            {loading ? 'Saving...' : 'Save & Continue'}
         </button>
       </div>
     </>

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
+const uploadRoutes = require('./routes/uploadRoutes'); // <-- 1. Import the new upload routes
 
 // Load environment variables
 dotenv.config();
@@ -19,10 +20,11 @@ app.use(express.json()); // To accept JSON data in the body
 
 // --- API Routes ---
 app.get('/', (req, res) => {
-  res.send('Room8 API is running...');
+  res.send('Room8 API is running...');
 });
 
 app.use('/api/users', userRoutes);
+app.use('/api/upload', uploadRoutes); // <-- 2. Use the new upload routes
 
 
 const PORT = process.env.PORT || 5000;
