@@ -1,44 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RoommateCard from '../RoommateCard/RoommateCard';
 
-// Sample data for featured roommates
-const featuredRoommates = [
-  {
-    id: 1, name: 'Sameer Singh', age: 25, gender: 'male',
-    imageUrl: 'https://randomuser.me/api/portraits/men/34.jpg',
-    occupation: 'professional', job: 'Software Engineer',
-    location: 'Kochi, Kerala', budget: 15000,
-    bio: "I work in tech, mostly from home. I enjoy video games and quiet evenings.",
-    preferences: ['Non-smoker', 'Quiet', 'Clean'],
-  },
-  {
-    id: 2, name: 'Neha Sharma', age: 22, gender: 'female',
-    imageUrl: 'https://randomuser.me/api/portraits/women/22.jpg',
-    occupation: 'student', job: 'M.Tech Student',
-    location: 'Thiruvananthapuram, Kerala', budget: 8000,
-    bio: "Student at CET. I'm friendly, outgoing, and keep my space tidy.",
-    preferences: ['Vegetarian', 'Social', 'Tidy'],
-  },
-  {
-    id: 3, name: 'Arjun Menon', age: 28, gender: 'male',
-    imageUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
-    occupation: 'professional', job: 'Graphic Designer',
-    location: 'Kochi, Kerala', budget: 12000,
-    bio: "Creative professional who loves music and art. I have a cat who is very friendly.",
-    preferences: ['Pet-friendly', 'Creative', 'Social'],
-  },
-  {
-    id: 4, name: 'Anjali Nair', age: 26, gender: 'female',
-    imageUrl: 'https://randomuser.me/api/portraits/women/31.jpg',
-    occupation: 'professional', job: 'Marketing Manager',
-    location: 'Kochi, Kerala', budget: 18000,
-    bio: "Love exploring new places and trying out new food. Looking for a flatmate to explore the city with.",
-    preferences: ['Social', 'Foodie', 'Clean'],
-  },
-];
-
 export default function FeaturedRoommates() {
+  const [roommates, setRoommates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFeaturedRoommates = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch roommates');
+        }
+        const data = await response.json();
+        // Take only the first 4 roommates for the "featured" section
+        setRoommates(data.slice(0, 4));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedRoommates();
+  }, []);
+
   return (
     <section>
       <div className="flex justify-between items-center mb-8">
@@ -47,11 +36,17 @@ export default function FeaturedRoommates() {
           Browse All Roommates →
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {featuredRoommates.map(person => (
-          <RoommateCard key={person.id} person={person} />
-        ))}
-      </div>
+
+      {loading && <p>Loading roommates...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {roommates.map(person => (
+            <RoommateCard key={person._id} person={person} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

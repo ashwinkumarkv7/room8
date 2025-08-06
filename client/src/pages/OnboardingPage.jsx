@@ -1,8 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // <-- Corrected the path here
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
-import OnboardingForm from '../components/Onboarding/OnboardingForm'; // <-- Import the real form
+
+// This is a placeholder for the form. We will build the real one later.
+const OnboardingForm = ({ onComplete }) => {
+    return (
+        <div>
+            <h3 className="text-xl font-semibold text-gray-800">Complete Your Profile</h3>
+            <p className="text-gray-500 mt-1">Fill out the details below to get better matches.</p>
+            <div className="mt-6 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">Your detailed profile form will go here.</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+                <button onClick={onComplete} className="bg-[#6b2184] text-white px-6 py-2 rounded-md font-semibold hover:brightness-90">
+                    Save & Continue
+                </button>
+            </div>
+        </div>
+    );
+};
 
 export default function OnboardingPage() {
     const [step, setStep] = useState(2); // Start at step 2: Profile Details
@@ -10,12 +27,11 @@ export default function OnboardingPage() {
     const { userInfo } = useAuth();
 
     const handleCompleteStep = () => {
-        // This function is called by the OnboardingForm when the user clicks "Save & Continue"
         setStep(prev => prev + 1);
     };
 
     const handleSkip = () => {
-        navigate('/discover'); // Navigate to the main logged-in page
+        navigate('/discover');
     };
 
     const steps = ["Account Created", "Profile Details", "Done!"];
@@ -44,10 +60,8 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-lg">
-                    {/* Render the real form at step 2 */}
                     {step === 2 && <OnboardingForm onComplete={handleCompleteStep} />}
                     
-                    {/* Render the success message at step 3 */}
                     {step === 3 && (
                         <div className="text-center py-8">
                             <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto" />

@@ -4,7 +4,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
-const uploadRoutes = require('./routes/uploadRoutes'); // <-- 1. Import the new upload routes
+const uploadRoutes = require('./routes/uploadRoutes');
+const roomRoutes = require('./routes/roomRoutes'); // <-- 1. Import room routes
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +25,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/users', userRoutes);
-app.use('/api/upload', uploadRoutes); // <-- 2. Use the new upload routes
+app.use('/api/upload', uploadRoutes);
+app.use('/api/rooms', roomRoutes); // <-- 2. Use room routes
 
 
 const PORT = process.env.PORT || 5000;

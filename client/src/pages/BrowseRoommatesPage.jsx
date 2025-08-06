@@ -1,55 +1,47 @@
 import React, { useState, useEffect } from 'react';
-// 1. Import the useLocation hook
 import { useLocation } from 'react-router-dom';
 import RoommateFilterSidebar from '../components/RoommateFilterSidebar/RoommateFilterSidebar';
 import RoommateGrid from '../components/RoommateGrid/RoommateGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
 
-// --- Sample Data for potential roommates ---
-const DUMMY_ROOMMATES = [
-  {
-    id: 1, name: 'Sameer Singh', age: 25, gender: 'male',
-    imageUrl: 'https://randomuser.me/api/portraits/men/34.jpg',
-    occupation: 'professional', job: 'Software Engineer',
-    location: 'Kochi, Kerala', budget: 15000,
-    bio: "I work in tech, mostly from home. I enjoy video games and quiet evenings. Looking for a clean and respectful roommate.",
-    preferences: ['Non-smoker', 'Quiet', 'Clean'],
-    vibe: { isSmoker: false, isNightOwl: false, cleanliness: 'clean' }
-  },
-  {
-    id: 2, name: 'Neha Sharma', age: 22, gender: 'female',
-    imageUrl: 'https://randomuser.me/api/portraits/women/22.jpg',
-    occupation: 'student', job: 'M.Tech Student',
-    location: 'Thiruvananthapuram, Kerala', budget: 8000,
-    bio: "Student at CET. I'm friendly, outgoing, and keep my space tidy. I love exploring cafes on weekends.",
-    preferences: ['Vegetarian', 'Social', 'Tidy'],
-    vibe: { isSmoker: false, isNightOwl: true, cleanliness: 'tidy' }
-  },
-  {
-    id: 3, name: 'Arjun Menon', age: 28, gender: 'male',
-    imageUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
-    occupation: 'professional', job: 'Graphic Designer',
-    location: 'Kochi, Kerala', budget: 12000,
-    bio: "Creative professional who loves music and art. I have a cat who is very friendly. Looking for a pet-friendly flatmate.",
-    preferences: ['Pet-friendly', 'Creative', 'Social'],
-    vibe: { isSmoker: true, isNightOwl: true, cleanliness: 'average' }
-  },
-];
-
 export default function BrowseRoommatesPage() {
-  const [roommates, setRoommates] = useState([]);
+  const [allRoommates, setAllRoommates] = useState([]);
+  const [filteredRoommates, setFilteredRoommates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [filters, setFilters] = useState({
     location: '',
     occupation: 'any',
-    budget: 20000,
+    budget: 25000, // Adjusted default for clarity
     gender: 'any'
   });
   const [searchQuery, setSearchQuery] = useState('');
   
-  // 2. Get the location object from React Router
   const location = useLocation();
 
-  // 3. This new useEffect checks for passed state when the page loads
+  // Fetch all user data from the server on initial load
+  useEffect(() => {
+    const fetchRoommates = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch roommates');
+        }
+        const data = await response.json();
+        setAllRoommates(data);
+        setFilteredRoommates(data); // Initially set all users
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoommates();
+  }, []);
+
+  // Pre-fill location filter if passed from Hero search
   useEffect(() => {
     if (location.state && location.state.location) {
       setFilters(prevFilters => ({
@@ -59,32 +51,30 @@ export default function BrowseRoommatesPage() {
     }
   }, [location.state]);
 
-
-  // This useEffect handles all the filtering logic
+  // Apply filters whenever filters or search query change
   useEffect(() => {
-    let filteredList = DUMMY_ROOMMATES;
+    let results = allRoommates;
 
-    if (searchQuery) {
-      filteredList = filteredList.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.job.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.location.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    if (filters.location) {
-        filteredList = filteredList.filter(p => p.location.toLowerCase().includes(filters.location.toLowerCase()));
-    }
-    if (filters.occupation !== 'any') {
-        filteredList = filteredList.filter(p => p.occupation === filters.occupation);
-    }
-    if (filters.gender !== 'any') {
-        filteredList = filteredList.filter(p => p.gender === filters.gender);
-    }
-    filteredList = filteredList.filter(p => p.budget <= filters.budget);
+    // --- This is the corrected filtering logic ---
+    results = results.filter(p => {
+        const searchMatch = !searchQuery || 
+            p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.profession && p.profession.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (p.city && p.city.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    setRoommates(filteredList);
-  }, [filters, searchQuery]);
+        const locationMatch = !filters.location || (p.city && p.city.toLowerCase().includes(filters.location.toLowerCase()));
+        
+        const budgetMatch = !p.budget || p.budget <= filters.budget; // Only filter if budget is set
+
+        const occupationMatch = filters.occupation === 'any' || p.occupation === filters.occupation;
+        
+        const genderMatch = filters.gender === 'any' || p.gender === filters.gender;
+
+        return searchMatch && locationMatch && budgetMatch && occupationMatch && genderMatch;
+    });
+
+    setFilteredRoommates(results);
+  }, [filters, searchQuery, allRoommates]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -97,7 +87,13 @@ export default function BrowseRoommatesPage() {
           </aside>
           
           <main className="w-full md:w-3/4 lg:w-4/5">
-            <RoommateGrid roommates={roommates} />
+            {loading ? (
+              <p>Loading roommates...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <RoommateGrid roommates={filteredRoommates} />
+            )}
           </main>
         </div>
       </div>

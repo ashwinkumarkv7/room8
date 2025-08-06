@@ -1,54 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // Use Link for navigation
 import ListingCard from './ListingCard';
 
-// Sample data - no changes here
-const listings = [
-  {
-    imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80",
-    price: 950,
-    title: "Sunny Apartment in Downtown",
-    location: "Chicago, IL",
-    tags: ["Pet-friendly", "Furnished", "Parking"]
-  },
-  {
-    imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80",
-    price: 750,
-    title: "Cozy Room Near Campus",
-    location: "Austin, TX",
-    tags: ["Student-friendly", "Utilities included"]
-  },
-  {
-    imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80",
-    price: 1200,
-    title: "Modern Loft in Arts District",
-    location: "Los Angeles, CA",
-    tags: ["Creative space", "Balcony", "Gym access"]
-  },
-  {
-    imageUrl: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&q=80",
-    price: 850,
-    title: "Quiet House in Suburbs",
-    location: "Portland, OR",
-    tags: ["Garden", "Parking", "Quiet area"]
-  }
-];
-
 export default function FeaturedListings() {
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFeaturedListings = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/rooms');
+        if (!response.ok) {
+          throw new Error('Failed to fetch listings');
+        }
+        const data = await response.json();
+        // Take only the first 4 listings for the "featured" section
+        setListings(data.slice(0, 4));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedListings();
+  }, []); // Empty array ensures this runs only once when the component mounts
+
   return (
-    // 1. Used a light gray background for a clean, modern feel
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Featured Listings</h2>
-          {/* 2. Used your brand color for the link */}
-          <a href="#" className="text-[#6b2184] font-semibold hover:underline">Browse All Rooms →</a>
+          <Link to="/browse-rooms" className="text-[#6b2184] font-semibold hover:underline">
+            Browse All Rooms →
+          </Link>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {listings.map((listing, index) => (
-            <ListingCard key={index} listing={listing} />
-          ))}
-        </div>
+        {loading && <p>Loading listings...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+        
+        {!loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {listings.map((listing) => (
+              // Use listing._id from MongoDB as the key for better performance
+              <ListingCard key={listing._id} listing={listing} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

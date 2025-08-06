@@ -1,75 +1,15 @@
 import React, { useState, useEffect } from 'react';
-// 1. Import useLocation to read navigation state
 import { useLocation } from 'react-router-dom';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ResultsGrid from '../components/ResultsGrid/ResultsGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
 
-const DUMMY_LISTINGS = [
-  {
-    id: 1,
-    imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80",
-    price: 8500,
-    title: "1BHK near Infopark",
-    area: "Kakkanad",
-    city: "Kochi",
-    postedBy: { name: "Anjali", imageUrl: "https://randomuser.me/api/portraits/women/4.jpg", rating: 4.5 },
-    features: ["AC", "Wi-Fi", "Attached Bath"],
-    roomType: '1bhk',
-    furnishing: 'furnished',
-    petFriendly: true,
-    internet: true,
-    verified: true
-  },
-  {
-    id: 2,
-    imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80",
-    price: 6000,
-    title: "Shared Room for Students",
-    area: "Pattoor",
-    city: "Thiruvananthapuram",
-    postedBy: { name: "Rohan", imageUrl: "https://randomuser.me/api/portraits/men/11.jpg", rating: 5 },
-    features: ["Wi-Fi", "Parking"],
-    roomType: 'shared',
-    furnishing: 'unfurnished',
-    petFriendly: false,
-    internet: true,
-    verified: false
-  },
-  {
-    id: 3,
-    imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80",
-    price: 12000,
-    title: "Furnished Private Room",
-    area: "Panampilly Nagar",
-    city: "Kochi",
-    postedBy: { name: "Priya", imageUrl: "https://randomuser.me/api/portraits/women/14.jpg", rating: 4 },
-    features: ["Furnished", "AC", "Wi-Fi"],
-    roomType: 'private',
-    furnishing: 'furnished',
-    petFriendly: false,
-    internet: true,
-    verified: true
-  },
-  {
-    id: 4,
-    imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80",
-    price: 35000,
-    title: "Spacious Apartment downtown",
-    area: "MG Road",
-    city: "Kochi",
-    postedBy: { name: "Vikram", imageUrl: "https://randomuser.me/api/portraits/men/18.jpg", rating: 4.8 },
-    features: ["Parking", "AC", "Wi-Fi"],
-    roomType: '1bhk',
-    furnishing: 'furnished',
-    petFriendly: true,
-    internet: true,
-    verified: true
-  }
-];
-
 export default function BrowseRoomsPage() {
-  const [listings, setListings] = useState([]);
+  const [allListings, setAllListings] = useState([]); // Holds all rooms from the DB
+  const [filteredListings, setFilteredListings] = useState([]); // Holds the rooms to display
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [filters, setFilters] = useState({
     location: '',
     budget: 50000,
@@ -81,14 +21,33 @@ export default function BrowseRoomsPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
-
-  // 2. Get the current location object from React Router
+  
   const location = useLocation();
 
-  // 3. This new useEffect runs when the page loads to check for passed state
+  // --- 1. Fetch all room data from the server on initial load ---
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/rooms');
+        if (!response.ok) {
+          throw new Error('Failed to fetch rooms');
+        }
+        const data = await response.json();
+        setAllListings(data);
+        setFilteredListings(data); // Initially, show all listings
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []); // Empty dependency array means this runs only once on mount
+
+  // --- 2. Pre-fill location filter if passed from Hero search ---
   useEffect(() => {
     if (location.state && location.state.location) {
-      // If a location was passed from the Hero search, update the filter
       setFilters(prevFilters => ({
         ...prevFilters,
         location: location.state.location
@@ -96,12 +55,12 @@ export default function BrowseRoomsPage() {
     }
   }, [location.state]);
 
-  // This useEffect handles all the filtering logic
+  // --- 3. Apply filters whenever filters or search query change ---
   useEffect(() => {
-    let filteredListings = DUMMY_LISTINGS;
+    let results = allListings;
 
     if (searchQuery) {
-      filteredListings = filteredListings.filter(listing =>
+      results = results.filter(listing =>
         listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.city.toLowerCase().includes(searchQuery.toLowerCase())
@@ -109,35 +68,35 @@ export default function BrowseRoomsPage() {
     }
     
     if (filters.location) {
-      filteredListings = filteredListings.filter(listing =>
+      results = results.filter(listing =>
         listing.city.toLowerCase().includes(filters.location.toLowerCase()) ||
         listing.area.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
-    filteredListings = filteredListings.filter(listing => listing.price <= filters.budget);
+    results = results.filter(listing => listing.price <= filters.budget);
 
     if (filters.roomType !== 'any') {
-      filteredListings = filteredListings.filter(listing => listing.roomType === filters.roomType);
+      results = results.filter(listing => listing.roomType === filters.roomType);
     }
 
     if (filters.furnishing !== 'any') {
-      filteredListings = filteredListings.filter(listing => listing.furnishing === filters.furnishing);
+      results = results.filter(listing => listing.furnishing === filters.furnishing);
     }
 
     if (filters.petFriendly) {
-      filteredListings = filteredListings.filter(listing => listing.petFriendly === true);
+      results = results.filter(listing => listing.petFriendly === true);
     }
     if (filters.internet) {
-      filteredListings = filteredListings.filter(listing => listing.internet === true);
+      results = results.filter(listing => listing.internet === true);
     }
     if (filters.verified) {
-      filteredListings = filteredListings.filter(listing => listing.verified === true);
+      results = results.filter(listing => listing.verified === true);
     }
 
-    setListings(filteredListings);
+    setFilteredListings(results);
 
-  }, [filters, searchQuery]);
+  }, [filters, searchQuery, allListings]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -155,8 +114,12 @@ export default function BrowseRoomsPage() {
           </aside>
           
           <main className="w-full md:w-3/4 lg:w-4/5">
-            {viewMode === 'grid' ? (
-              <ResultsGrid listings={listings} />
+            {loading ? (
+              <p>Loading rooms...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : viewMode === 'grid' ? (
+              <ResultsGrid listings={filteredListings} />
             ) : (
               <div className="h-[600px] bg-gray-300 rounded-lg flex items-center justify-center">
                 <p className="text-gray-600">Map View Placeholder</p>

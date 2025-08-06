@@ -1,34 +1,60 @@
 import React from 'react';
-import { MapPinIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 
 export default function ListingCard({ listing }) {
-  const { imageUrl, price, title, location, tags } = listing;
-  
+  // 1. Using the correct property names from your 'Room' model
+  const { imageUrl, price, title, area, city, postedBy, features } = listing;
+
   return (
-    // 1. Make the card a flex column to control its children's layout
-    <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full">
       
-      {/* Image container - flex-shrink-0 prevents it from shrinking */}
+      {/* Image container */}
       <div className="h-48 bg-gray-200 relative flex-shrink-0">
         <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-        <div className="absolute top-4 left-4 bg-[#6b2184] text-white px-3 py-1 rounded-full text-sm font-medium">${price}/mo</div>
+        {/* 2. Updated price display format */}
+        <div className="absolute top-4 left-4 bg-[#6b2184] text-white px-3 py-1 rounded-full text-sm font-medium">
+          ₹{price.toLocaleString('en-IN')}/mo
+        </div>
       </div>
       
-      {/* 2. Content area is now also a flex column and will grow to fill available space */}
+      {/* Content area */}
       <div className="flex flex-col flex-grow p-5">
         <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-600 mb-3 flex items-center">
           <MapPinIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          {location}
+          {/* 3. Combining 'area' and 'city' for the location */}
+          {area}, {city}
         </p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {tags.map((tag, index) => (
-            <span key={index} className="bg-purple-100 text-[#6b2184] px-3 py-1 rounded-full text-xs font-semibold">{tag}</span>
-          ))}
-        </div>
+        
+        {/* 4. Using 'features' instead of 'tags' */}
+        {features && features.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+            {features.map((feature) => (
+                <span key={feature} className="bg-purple-100 text-[#6b2184] px-3 py-1 rounded-full text-xs font-semibold">{feature}</span>
+            ))}
+            </div>
+        )}
 
-        {/* 3. Using mt-auto (margin-top: auto) pushes the button to the bottom of the card */}
-        <button className="mt-auto w-full bg-[#6b2184] text-white py-2.5 rounded-lg hover:brightness-90 transition-all font-semibold">View Details</button>
+        {/* 5. Added the 'postedBy' section, which was missing */}
+        {postedBy && (
+            <div className="border-t border-gray-200 pt-3 mt-auto">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <img src={postedBy.imageUrl} alt={postedBy.name} className="h-10 w-10 rounded-full object-cover mr-3" />
+                        <div>
+                            <p className="text-sm font-semibold text-gray-700">{postedBy.name}</p>
+                            <div className="flex items-center">
+                                <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
+                                <span className="text-xs text-gray-500">{postedBy.rating}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button className="bg-[#6b2184] text-white px-4 py-2 rounded-md text-sm font-semibold hover:brightness-90 transition-all">
+                        View
+                    </button>
+                </div>
+            </div>
+        )}
       </div>
     </div>
   );
