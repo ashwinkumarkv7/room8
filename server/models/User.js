@@ -1,4 +1,3 @@
-// --- User Data Schema ---
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -7,32 +6,33 @@ const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  mobile: { type: String },
-  gender: { type: String },
-  dob: { type: Date },
+  dob: { type: String },
 
-  // Profile Details
-  city: { type: String },
-  preferredLocation: { type: String },
-  profession: { type: String },
-  workplace: { type: String },
-  budget: { type: Number },
-  roomType: { type: String },
-  moveInDate: { type: Date },
-  hobbies: [{ type: String }],
-  routine: { type: String },
-  smoking: { type: String },
-  drinking: { type: String },
-  food: { type: String },
-  pets: { type: String },
-  bio: { type: String },
-  profilePic: { type: String, default: 'default_avatar_url' }, // Store URL of the image
+  // Profile Details from Onboarding
+  city: { type: String, default: '' },
+  preferredLocation: { type: String, default: '' },
+  profession: { type: String, default: '' },
+  workplace: { type: String, default: '' },
+  budget: { type: Number, default: 0 },
+  roomType: { type: String, default: 'private' },
+  moveInDate: { type: Date, default: null },
+  hobbies: { type: [String], default: [] },
+  bio: { type: String, default: '' },
+  profilePic: { type: String, default: 'default_avatar_url' },
+
+  // Detailed Lifestyle Fields from Onboarding
+  cleanliness: { type: String, default: 'average' },
+  socialHabits: { type: String, default: 'occasionally' },
+  sleepSchedule: { type: String, default: 'early_bird' },
+  smoking: { type: String, default: 'no' },
+  drinking: { type: String, default: 'no' },
+  pets: { type: String, default: 'no' },
+
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 // --- Password Hashing Middleware ---
-// This will run before a user document is saved
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     next();

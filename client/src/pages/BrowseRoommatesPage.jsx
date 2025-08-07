@@ -10,11 +10,13 @@ export default function BrowseRoommatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 1. Corrected the default budget to match the filter sidebar's max value
   const [filters, setFilters] = useState({
     location: '',
-    occupation: 'any',
-    budget: 25000, // Adjusted default for clarity
-    gender: 'any'
+    budget: 25000,
+    cleanliness: 'any',
+    socialHabits: 'any',
+    sleepSchedule: 'any',
   });
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -26,12 +28,10 @@ export default function BrowseRoommatesPage() {
       try {
         setLoading(true);
         const response = await fetch('http://localhost:5000/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch roommates');
-        }
+        if (!response.ok) throw new Error('Failed to fetch roommates');
         const data = await response.json();
         setAllRoommates(data);
-        setFilteredRoommates(data); // Initially set all users
+        setFilteredRoommates(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -51,12 +51,13 @@ export default function BrowseRoommatesPage() {
     }
   }, [location.state]);
 
-  // Apply filters whenever filters or search query change
+  // Apply all filters whenever they change
   useEffect(() => {
     let results = allRoommates;
 
-    // --- This is the corrected filtering logic ---
+    // 2. This is the corrected and enhanced filtering logic
     results = results.filter(p => {
+        // Use the correct property names: fullName, profession, city
         const searchMatch = !searchQuery || 
             p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (p.profession && p.profession.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -64,13 +65,14 @@ export default function BrowseRoommatesPage() {
 
         const locationMatch = !filters.location || (p.city && p.city.toLowerCase().includes(filters.location.toLowerCase()));
         
-        const budgetMatch = !p.budget || p.budget <= filters.budget; // Only filter if budget is set
+        const budgetMatch = !p.budget || p.budget <= filters.budget;
 
-        const occupationMatch = filters.occupation === 'any' || p.occupation === filters.occupation;
-        
-        const genderMatch = filters.gender === 'any' || p.gender === filters.gender;
+        // Add the new lifestyle filter logic
+        const cleanlinessMatch = filters.cleanliness === 'any' || p.cleanliness === filters.cleanliness;
+        const socialHabitsMatch = filters.socialHabits === 'any' || p.socialHabits === filters.socialHabits;
+        const sleepScheduleMatch = filters.sleepSchedule === 'any' || p.sleepSchedule === filters.sleepSchedule;
 
-        return searchMatch && locationMatch && budgetMatch && occupationMatch && genderMatch;
+        return searchMatch && locationMatch && budgetMatch && cleanlinessMatch && socialHabitsMatch && sleepScheduleMatch;
     });
 
     setFilteredRoommates(results);

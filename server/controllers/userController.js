@@ -49,23 +49,48 @@ const loginUser = async (req, res) => {
   }
 };
 
-// --- Update User Profile ---
+// --- Update User Profile (Corrected Logic) ---
 const updateUserProfile = async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (user) {
-    user.fullName = req.body.fullName || user.fullName;
-    user.city = req.body.city || user.city;
-    // ... update other fields
-    const updatedUser = await user.save();
-    res.json({
-      _id: updatedUser._id,
-      fullName: updatedUser.fullName,
-      email: updatedUser.email,
-      profilePic: updatedUser.profilePic,
-      token: generateToken(updatedUser._id),
-    });
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      // This logic checks if a field was included in the request and updates it.
+      // This correctly handles empty strings and ensures all data is saved.
+      user.fullName = req.body.fullName ?? user.fullName;
+      user.city = req.body.city ?? user.city;
+      user.preferredLocation = req.body.preferredLocation ?? user.preferredLocation;
+      user.profession = req.body.profession ?? user.profession;
+      user.workplace = req.body.workplace ?? user.workplace;
+      user.budget = req.body.budget ?? user.budget;
+      user.roomType = req.body.roomType ?? user.roomType;
+      user.moveInDate = req.body.moveInDate ?? user.moveInDate;
+      user.hobbies = req.body.hobbies ?? user.hobbies;
+      user.bio = req.body.bio ?? user.bio;
+      user.cleanliness = req.body.cleanliness ?? user.cleanliness;
+      user.socialHabits = req.body.socialHabits ?? user.socialHabits;
+      user.sleepSchedule = req.body.sleepSchedule ?? user.sleepSchedule;
+      user.smoking = req.body.smoking ?? user.smoking;
+      user.drinking = req.body.drinking ?? user.drinking;
+      user.pets = req.body.pets ?? user.pets;
+
+      const updatedUser = await user.save();
+
+      // Send back the complete, updated user object to refresh the context
+      res.json({
+        _id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        profilePic: updatedUser.profilePic,
+        ...updatedUser._doc, 
+        token: generateToken(updatedUser._id),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Server Error' });
   }
 };
 
