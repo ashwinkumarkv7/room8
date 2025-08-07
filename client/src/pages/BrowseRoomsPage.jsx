@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ResultsGrid from '../components/ResultsGrid/ResultsGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
+import API_URL from '../apiConfig'; // 1. Import the API URL
 
 export default function BrowseRoomsPage() {
   const [allListings, setAllListings] = useState([]); // Holds all rooms from the DB
@@ -24,12 +25,13 @@ export default function BrowseRoomsPage() {
   
   const location = useLocation();
 
-  // --- 1. Fetch all room data from the server on initial load ---
+  // --- Fetch all room data from the server on initial load ---
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/rooms');
+        // 2. Use the live server URL from the config file
+        const response = await fetch(`${API_URL}/api/rooms`);
         if (!response.ok) {
           throw new Error('Failed to fetch rooms');
         }
@@ -45,7 +47,7 @@ export default function BrowseRoomsPage() {
     fetchRooms();
   }, []); // Empty dependency array means this runs only once on mount
 
-  // --- 2. Pre-fill location filter if passed from Hero search ---
+  // --- Pre-fill location filter if passed from Hero search ---
   useEffect(() => {
     if (location.state && location.state.location) {
       setFilters(prevFilters => ({
@@ -55,7 +57,7 @@ export default function BrowseRoomsPage() {
     }
   }, [location.state]);
 
-  // --- 3. Apply filters whenever filters or search query change ---
+  // --- Apply filters whenever filters or search query change ---
   useEffect(() => {
     let results = allListings;
 

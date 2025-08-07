@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. Import the useAuth hook
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo/room8-logo.png';
 
 // --- Reusable Input Field Component ---
@@ -24,7 +24,7 @@ const InputField = ({ id, label, type, value, onChange, required = true }) => (
 // --- Google SVG Icon ---
 const GoogleIcon = () => (
     <svg className="w-5 h-5 mr-3" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-        <path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512S0 403.3 0 261.8C0 120.3 106.4 8 244 8s244 112.3 244 253.8zM138.3 377.4c23.7 23.7 55.3 37.4 90.7 37.4s67-13.7 90.7-37.4c12.3-12.3 20.2-27.9 24.1-44.1H114.2c3.9 16.2 11.8 31.8 24.1 44.1zM244 118c-33.8 0-63.8 13.5-85.6 35.6-1.6 1.6-3.1 3.2-4.6 4.8l79.4 79.4c2.8-1.5 5.8-2.8 8.9-3.9h.1c16.3-5.5 34.3-8.5 53.4-8.5s37.1 3 53.4 8.5h.1c3.1 1.1 6.1 2.4 8.9 3.9l79.4-79.4c-1.5-1.6-3-3.2-4.6-4.8C307.8 131.5 277.8 118 244 118z"></path>
+        <path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512S0 403.3 0 261.8C0 120.3 106.4 8 244 8s244 112.3 244 253.8zM138.3 377.4c23.7 23.7 55.3 37.4 90.7 37.4s67-13.7 90.7-37.4c12.3-12.3 20.2-27.9 24.1-44.1H114.2c3.9 16.2 11.8 31.8 24.1 44.1zM244 118c-33.8 0-63.8 13.5-85.6 35.6-1.6 1.6-3.1 3.2-4.6 4.8l79.4 79.4c2.8-1.5 5.8-2.8 8.9-3.9h.۱c16.3-5.5 34.3-8.5 53.4-8.5s37.1 3 53.4 8.5h.1c3.1 1.1 6.1 2.4 8.9 3.9l79.4-79.4c-1.5-1.6-3-3.2-4.6-4.8C307.8 131.5 277.8 118 244 118z"></path>
     </svg>
 );
 
@@ -34,7 +34,7 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // 2. Get the login function from our context
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +47,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
+      // --- Updated this line with your live server URL ---
+      const response = await fetch('https://room8-server.onrender.com/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -61,7 +62,6 @@ export default function LoginPage() {
       }
 
       // --- SUCCESS ---
-      // 3. Call the context's login function. This updates the global state.
       login(data);
       navigate('/discover'); // Redirect to the discovery page
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { PhotoIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import API_URL from '../../apiConfig'; // 1. Import the API URL
 
 const HOBBY_OPTIONS = ['Music', 'Reading', 'Partying', 'Cooking', 'Gaming', 'Sports', 'Travel', 'Movies'];
 
@@ -99,7 +100,8 @@ export default function OnboardingForm({ onComplete }) {
         if (profilePicFile) {
             const formData = new FormData();
             formData.append('profilePic', profilePicFile);
-            const uploadRes = await fetch('http://localhost:5000/api/upload/profile-picture', {
+            // 2. Use the live server URL
+            const uploadRes = await fetch(`${API_URL}/api/upload/profile-picture`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${userInfo.token}` },
                 body: formData,
@@ -107,7 +109,8 @@ export default function OnboardingForm({ onComplete }) {
             const uploadData = await uploadRes.json();
             if (!uploadRes.ok) throw new Error(uploadData.message || 'Image upload failed');
         }
-        const profileUpdateRes = await fetch('http://localhost:5000/api/users/profile', {
+        // 3. Use the live server URL
+        const profileUpdateRes = await fetch(`${API_URL}/api/users/profile`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -126,7 +129,6 @@ export default function OnboardingForm({ onComplete }) {
       }
   };
 
-  // --- Reusable styles for prominent input fields ---
   const inputStyles = "block w-full rounded-lg border-2 border-gray-300 shadow-md focus:border-[#6A2083] focus:ring-4 focus:ring-[#6A2083]/20 sm:text-sm p-3 transition-all duration-200";
 
   return (

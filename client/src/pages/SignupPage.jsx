@@ -1,8 +1,9 @@
-import React, { useState } from 'react'; // <-- Corrected this line
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo/room8-logo.png';
 import DobPicker from '../components/Signup/DobPicker';
+import API_URL from '../apiConfig'; // 1. Import the API URL
 
 const InputField = ({ id, label, type = 'text', value, onChange }) => (
   <div>
@@ -41,7 +42,8 @@ export default function SignupPage() {
       setLoading(true);
 
       try {
-        const response = await fetch('http://localhost:5000/api/users/register', {
+        // 2. Use the live server URL from the config file
+        const response = await fetch(`${API_URL}/api/users/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
