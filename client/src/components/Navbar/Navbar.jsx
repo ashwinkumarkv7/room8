@@ -39,7 +39,6 @@ export default function ModernNavbar() {
         <div className="hidden md:flex flex-1 justify-center items-center space-x-8">
           <CustomNavLink to="/">Home</CustomNavLink>
           <CustomNavLink to="/browse-rooms">Browse Rooms</CustomNavLink>
-          {/* --- 1. Added the "Browse Roommates" link back --- */}
           <CustomNavLink to="/browse-roommates">Browse Roommates</CustomNavLink>
           <CustomNavLink to="/about">About</CustomNavLink>
         </div>
@@ -67,7 +66,7 @@ export default function ModernNavbar() {
         <div className="md:hidden bg-white px-6 pb-6 pt-2 space-y-4">
           <Link to="/" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Home</Link>
           <Link to="/browse-rooms" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Rooms</Link>
-          {/* --- 2. Also added the link back to the mobile menu --- */}
+          {/* --- Added the "Browse Roommates" link back to the mobile menu --- */}
           <Link to="/browse-roommates" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Roommates</Link>
           <Link to="/add-room" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Add Room</Link>
           <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>About</Link>
