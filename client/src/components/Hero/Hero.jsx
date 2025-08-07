@@ -15,9 +15,10 @@ export default function Hero() {
   return (
     <section 
       style={{ backgroundImage: `url(${bannerImage})` }}
-      className="relative bg-cover bg-center min-h-screen flex items-center text-white"
+      // --- 1. Updated this line for responsive height ---
+      // It's now min-h-[70vh] on mobile and min-h-screen on medium screens and up.
+      className="relative bg-cover bg-center min-h-[70vh] md:min-h-screen flex items-center text-white"
     >
-      {/* --- 1. Changed the overlay from black to a semi-transparent purple gradient --- */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#6b2184]/70 to-[#6b2184]/50" aria-hidden="true"></div>
       
       <div className="relative z-10 container mx-auto px-4 py-16">

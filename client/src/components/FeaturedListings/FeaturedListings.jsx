@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // Use Link for navigation
 import ListingCard from './ListingCard';
+import API_URL from '../../apiConfig'; // 1. Import the API URL
 
 export default function FeaturedListings() {
   const [listings, setListings] = useState([]);
@@ -11,7 +12,8 @@ export default function FeaturedListings() {
     const fetchFeaturedListings = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/rooms');
+        // 2. Use the live server URL from the config file
+        const response = await fetch(`${API_URL}/api/rooms`);
         if (!response.ok) {
           throw new Error('Failed to fetch listings');
         }
@@ -37,10 +39,10 @@ export default function FeaturedListings() {
             Browse All Rooms →
           </Link>
         </div>
-        
+
         {loading && <p>Loading listings...</p>}
         {error && <p className="text-red-500">{error}</p>}
-        
+
         {!loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {listings.map((listing) => (

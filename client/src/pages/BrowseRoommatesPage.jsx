@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import RoommateFilterSidebar from '../components/RoommateFilterSidebar/RoommateFilterSidebar';
 import RoommateGrid from '../components/RoommateGrid/RoommateGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
+import API_URL from '../apiConfig'; // 1. Import the API URL
 
 export default function BrowseRoommatesPage() {
   const [allRoommates, setAllRoommates] = useState([]);
@@ -10,7 +11,6 @@ export default function BrowseRoommatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. Corrected the default budget to match the filter sidebar's max value
   const [filters, setFilters] = useState({
     location: '',
     budget: 25000,
@@ -27,7 +27,8 @@ export default function BrowseRoommatesPage() {
     const fetchRoommates = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/users');
+        // 2. Use the live server URL from the config file
+        const response = await fetch(`${API_URL}/api/users`);
         if (!response.ok) throw new Error('Failed to fetch roommates');
         const data = await response.json();
         setAllRoommates(data);
@@ -55,9 +56,7 @@ export default function BrowseRoommatesPage() {
   useEffect(() => {
     let results = allRoommates;
 
-    // 2. This is the corrected and enhanced filtering logic
     results = results.filter(p => {
-        // Use the correct property names: fullName, profession, city
         const searchMatch = !searchQuery || 
             p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (p.profession && p.profession.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -67,7 +66,6 @@ export default function BrowseRoommatesPage() {
         
         const budgetMatch = !p.budget || p.budget <= filters.budget;
 
-        // Add the new lifestyle filter logic
         const cleanlinessMatch = filters.cleanliness === 'any' || p.cleanliness === filters.cleanliness;
         const socialHabitsMatch = filters.socialHabits === 'any' || p.socialHabits === filters.socialHabits;
         const sleepScheduleMatch = filters.sleepSchedule === 'any' || p.sleepSchedule === filters.sleepSchedule;
