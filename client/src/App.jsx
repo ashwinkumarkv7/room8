@@ -16,7 +16,8 @@ import AboutPage from './pages/AboutPage';
 import AddRoomPage from './pages/AddRoomPage';
 import DashboardPage from './pages/DashboardPage';
 import DiscoveryPage from './pages/DiscoveryPage';
-import OnboardingPage from './pages/OnboardingPage'; // <-- Import the new page
+import OnboardingPage from './pages/OnboardingPage';
+import RoomDetailsPage from './pages/RoomDetailsPage'; // <-- Import the new page
 
 // --- Auth & Dashboard Components ---
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -44,11 +45,12 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/rooms/:id" element={<RoomDetailsPage />} /> {/* <-- Add the new route */}
             
             {/* --- Protected Routes --- */}
             <Route element={<ProtectedRoute />}>
               <Route path="/discover" element={<DiscoveryPage />} />
-              <Route path="/onboarding" element={<OnboardingPage />} /> {/* <-- Add the new route */}
+              <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/add-room" element={<AddRoomPage />} />
               <Route path="/dashboard" element={<DashboardPage />}>
                 <Route index element={<MyProfile />} /> 

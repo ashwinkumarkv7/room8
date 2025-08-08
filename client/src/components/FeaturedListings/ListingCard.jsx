@@ -1,32 +1,36 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 
 export default function ListingCard({ listing }) {
-  // 1. Using the correct property names from your 'Room' model
-  const { imageUrl, price, title, area, city, postedBy, features } = listing;
+  // 1. Destructure _id directly from the listing object
+  const { _id, imageUrl, price, title, area, city, postedBy, features } = listing;
 
   return (
     <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full">
       
-      {/* Image container */}
-      <div className="h-48 bg-gray-200 relative flex-shrink-0">
-        <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-        {/* 2. Updated price display format */}
-        <div className="absolute top-4 left-4 bg-[#6b2184] text-white px-3 py-1 rounded-full text-sm font-medium">
-          ₹{price.toLocaleString('en-IN')}/mo
+      {/* 2. Ensure the Link uses the correct _id */}
+      <Link to={`/rooms/${_id}`}>
+        <div className="h-48 bg-gray-200 relative flex-shrink-0">
+          <img 
+            src={imageUrl} 
+            alt={title} 
+            className="w-full h-full object-cover"
+            onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/6b2184/FFFFFF?text=Room8' }}
+          />
+          <div className="absolute top-4 left-4 bg-[#6b2184] text-white px-3 py-1 rounded-full text-sm font-medium">
+            ₹{price ? price.toLocaleString('en-IN') : 'N/A'}/mo
+          </div>
         </div>
-      </div>
+      </Link>
       
-      {/* Content area */}
       <div className="flex flex-col flex-grow p-5">
         <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-600 mb-3 flex items-center">
           <MapPinIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          {/* 3. Combining 'area' and 'city' for the location */}
           {area}, {city}
         </p>
         
-        {/* 4. Using 'features' instead of 'tags' */}
         {features && features.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
             {features.map((feature) => (
@@ -35,7 +39,6 @@ export default function ListingCard({ listing }) {
             </div>
         )}
 
-        {/* 5. Added the 'postedBy' section, which was missing */}
         {postedBy && (
             <div className="border-t border-gray-200 pt-3 mt-auto">
                 <div className="flex items-center justify-between">
@@ -49,9 +52,10 @@ export default function ListingCard({ listing }) {
                             </div>
                         </div>
                     </div>
-                    <button className="bg-[#6b2184] text-white px-4 py-2 rounded-md text-sm font-semibold hover:brightness-90 transition-all">
+                    {/* 3. Ensure this Link also uses the correct _id */}
+                    <Link to={`/rooms/${_id}`} className="bg-[#6b2184] text-white px-4 py-2 rounded-md text-sm font-semibold hover:brightness-90 transition-all">
                         View
-                    </button>
+                    </Link>
                 </div>
             </div>
         )}
