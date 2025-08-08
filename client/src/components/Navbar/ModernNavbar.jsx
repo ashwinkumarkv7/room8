@@ -36,7 +36,8 @@ export default function ModernNavbar() {
   };
 
   return (
-    <nav className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+    // 1. Added 'relative' to make this the positioning container for the dropdown
+    <nav className="relative bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
@@ -64,7 +65,6 @@ export default function ModernNavbar() {
           {userInfo ? (
             <div className="relative">
               <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2">
-                {/* This logic displays the profile picture or a fallback icon */}
                 {userInfo.profilePic && userInfo.profilePic !== 'default_avatar_url' ? (
                   <img src={userInfo.profilePic} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
                 ) : (
@@ -99,8 +99,30 @@ export default function ModernNavbar() {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white px-6 pb-6 pt-2 space-y-4">
-          {/* ... mobile links ... */}
+        // 2. Made the dropdown absolute to overlay content below it
+        <div className="absolute left-0 w-full md:hidden bg-white shadow-lg px-6 pb-6 pt-2 space-y-4">
+          {userInfo ? (
+            <Link to="/discover" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Discover</Link>
+          ) : (
+            <Link to="/" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Home</Link>
+          )}
+          <Link to="/browse-rooms" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Rooms</Link>
+          <Link to="/browse-roommates" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Roommates</Link>
+          {userInfo && <Link to="/add-room" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Add Room</Link>}
+          <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>About</Link>
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            {userInfo ? (
+                <>
+                    <Link to="/dashboard" onClick={handleLinkClick} className="block w-full text-center bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-bold">My Dashboard</Link>
+                    <button onClick={() => { logoutHandler(); handleLinkClick(); }} className="block w-full text-center border border-red-500 text-red-500 px-4 py-2 rounded-full font-bold">Logout</button>
+                </>
+            ) : (
+                <>
+                    <Link to="/login" onClick={handleLinkClick} className="block w-full text-center bg-[#6b2184] text-white px-4 py-2 rounded-full font-bold hover:brightness-90 transition-all">Login</Link>
+                    <Link to="/signup" onClick={handleLinkClick} className="block w-full text-center border border-[#6b2184] text-[#6b2184] px-4 py-2 rounded-full font-bold hover:bg-[#6b2184] hover:text-white transition-colors">Sign Up</Link>
+                </>
+            )}
+          </div>
         </div>
       )}
     </nav>

@@ -31,7 +31,7 @@ export default function FeaturedListings() {
   }, []); // Empty array ensures this runs only once when the component mounts
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-5 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Featured Listings</h2>
