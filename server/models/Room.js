@@ -7,15 +7,14 @@ const roomSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   imageUrl: { type: String, required: true },
   features: [{ type: String }],
-  roomType: { type: String },
-  furnishing: { type: String },
-  petFriendly: { type: Boolean },
-  internet: { type: Boolean },
-  verified: { type: Boolean },
-  postedBy: {
-    name: { type: String },
-    imageUrl: { type: String },
-    rating: { type: Number },
+  roomType: { type: String }, // 'private', 'shared', etc.
+  description: { type: String, default: '' },
+  
+  // This is the crucial change. It now links to a User document.
+  postedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    required: true, 
+    ref: 'User' 
   },
 }, {
   timestamps: true,
