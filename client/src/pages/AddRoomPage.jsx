@@ -4,7 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import API_URL from '../apiConfig';
 import { PhotoIcon, XCircleIcon, PlusIcon } from '@heroicons/react/24/solid';
 
-// Reusable form components for a consistent look
+// --- Pre-defined list of common amenities ---
+const AMENITY_OPTIONS = [
+    'Wi-Fi', 'AC', 'Attached Bathroom', 'Furnished', 'Parking', 
+    'Utilities Included', 'Washing Machine', 'Kitchen Access', 'TV'
+];
+
+// Reusable form components
 const Section = ({ title, description, children }) => (
     <div className="py-8 border-b border-gray-200 last:border-b-0">
         <div>
@@ -14,14 +20,12 @@ const Section = ({ title, description, children }) => (
         <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">{children}</div>
     </div>
 );
-
 const FormField = ({ id, label, children, className = "sm:col-span-3" }) => (
     <div className={className}>
         <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
         <div className="mt-1">{children}</div>
     </div>
 );
-
 const inputStyles = "block w-full rounded-lg border-2 border-gray-300 shadow-md focus:border-[#6A2083] focus:ring-4 focus:ring-[#6A2083]/20 sm:text-sm p-3 transition-all duration-200";
 
 export default function AddRoomPage() {
@@ -60,6 +64,15 @@ export default function AddRoomPage() {
       setRoomImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
+  const handleFeatureToggle = (feature) => {
+    setRoomData(prev => ({
+      ...prev,
+      features: prev.features.includes(feature)
+        ? prev.features.filter(f => f !== feature)
+        : [...prev.features, feature]
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -70,23 +83,25 @@ export default function AddRoomPage() {
         throw new Error("Please upload at least one image for the room.");
       }
 
-      // Upload all images in parallel
-      const uploadPromises = roomImageFiles.map(file => {
-          const imageFormData = new FormData();
-          imageFormData.append('roomImages', file);
-          return fetch(`${API_URL}/api/upload/room-images`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${userInfo.token}` },
-              body: imageFormData,
-          }).then(res => res.json());
+      // 1. Create a single FormData object for all images
+      const imageFormData = new FormData();
+      roomImageFiles.forEach(file => {
+          imageFormData.append('roomImages', file); // Use the same key for all files
       });
-      
-      const uploadResults = await Promise.all(uploadPromises);
-      const imageUrls = uploadResults.flatMap(result => result.imageUrls);
 
+      // 2. Send all images in ONE request to the server
+      const uploadRes = await fetch(`${API_URL}/api/upload/room-images`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${userInfo.token}` },
+        body: imageFormData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.message || 'Image upload failed');
+      
+      // 3. Create the room with the array of URLs returned by the server
       const finalRoomData = {
         ...roomData,
-        imageUrls: imageUrls,
+        imageUrls: uploadData.imageUrls,
       };
 
       const createRoomRes = await fetch(`${API_URL}/api/rooms`, {
@@ -138,6 +153,27 @@ export default function AddRoomPage() {
               <FormField id="roomType" label="Room Type" className="sm:col-span-4">
                 <select name="roomType" value={roomData.roomType} onChange={handleInputChange} className={inputStyles}><option value="private">Private</option><option value="shared">Shared</option></select>
               </FormField>
+            </Section>
+
+            <Section title="Amenities" description="Select all the amenities your place offers.">
+                <FormField className="sm:col-span-6">
+                    <div className="flex flex-wrap gap-3">
+                        {AMENITY_OPTIONS.map(feature => (
+                            <button 
+                                type="button" 
+                                key={feature} 
+                                onClick={() => handleFeatureToggle(feature)}
+                                className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${
+                                    roomData.features.includes(feature) 
+                                    ? 'bg-[#6b2184] text-white ring-2 ring-offset-2 ring-[#6b2184]' 
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {feature}
+                            </button>
+                        ))}
+                    </div>
+                </FormField>
             </Section>
 
             <Section title="Room Images" description="Upload multiple photos. The first image will be the main cover photo.">

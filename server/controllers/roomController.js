@@ -1,12 +1,24 @@
 const Room = require('../models/Room');
 const User = require('../models/User');
 
-// @desc    Fetch all rooms
+// @desc    Fetch all rooms, with optional filtering by roomType
 // @route   GET /api/rooms
 // @access  Public
 const getRooms = async (req, res) => {
   try {
-    const rooms = await Room.find({}).populate('postedBy', 'fullName profilePic');
+    // 1. Create a filter object based on query parameters
+    const filter = {};
+    if (req.query.roomType) {
+      filter.roomType = req.query.roomType;
+    }
+
+    // 2. Use the filter object in the find() method
+    // The populate call is now more robust.
+    const rooms = await Room.find(filter).populate({
+        path: 'postedBy',
+        select: 'fullName profilePic' // Selects specific fields
+    });
+    
     res.json(rooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);
@@ -48,7 +60,7 @@ const createRoom = async (req, res) => {
       features,
       roomType,
       description,
-      postedBy: req.user._id, // Get the user's ID from the 'protect' middleware
+      postedBy: req.user._id,
     });
 
     const createdRoom = await room.save();

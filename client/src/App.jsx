@@ -18,6 +18,8 @@ import DashboardPage from './pages/DashboardPage';
 import DiscoveryPage from './pages/DiscoveryPage';
 import OnboardingPage from './pages/OnboardingPage';
 import RoomDetailsPage from './pages/RoomDetailsPage';
+import PrivateRoomsPage from './pages/PrivateRoomsPage'; // <-- Import new page
+import SharedRoomsPage from './pages/SharedRoomsPage';   // <-- Import new page
 
 // --- Auth & Dashboard Components ---
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -45,8 +47,9 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/about" element={<AboutPage />} />
-            {/* --- This route is now updated to use :slug --- */}
             <Route path="/rooms/:slug" element={<RoomDetailsPage />} />
+            <Route path="/rooms/private" element={<PrivateRoomsPage />} /> {/* <-- Add new route */}
+            <Route path="/rooms/shared" element={<SharedRoomsPage />} />   {/* <-- Add new route */}
             
             {/* --- Protected Routes --- */}
             <Route element={<ProtectedRoute />}>
