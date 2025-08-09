@@ -3,17 +3,22 @@ import { Link } from 'react-router-dom';
 import { MapPinIcon, StarIcon } from '@heroicons/react/24/solid';
 
 export default function ListingCard({ listing }) {
-  // 1. Destructure _id directly from the listing object
-  const { _id, imageUrl, price, title, area, city, postedBy, features } = listing;
+  const { _id, slug, imageUrls, imageUrl, price, title, area, city, postedBy, features } = listing;
+
+  // This logic handles both your old and new room data structures
+  const coverImage = (imageUrls && imageUrls.length > 0) 
+    ? imageUrls[0] 
+    : imageUrl 
+    ? imageUrl
+    : 'https://placehold.co/600x400/6b2184/FFFFFF?text=Room8';
 
   return (
     <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full">
       
-      {/* 2. Ensure the Link uses the correct _id */}
-      <Link to={`/rooms/${_id}`}>
+      <Link to={`/rooms/${slug}`}>
         <div className="h-48 bg-gray-200 relative flex-shrink-0">
           <img 
-            src={imageUrl} 
+            src={coverImage} 
             alt={title} 
             className="w-full h-full object-cover"
             onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/6b2184/FFFFFF?text=Room8' }}
@@ -39,21 +44,28 @@ export default function ListingCard({ listing }) {
             </div>
         )}
 
+        {/* --- This is the corrected section --- */}
+        {/* It now uses 'fullName' and 'profilePic' from the populated User model */}
         {postedBy && (
             <div className="border-t border-gray-200 pt-3 mt-auto">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <img src={postedBy.imageUrl} alt={postedBy.name} className="h-10 w-10 rounded-full object-cover mr-3" />
+                        <img 
+                          src={postedBy.profilePic} 
+                          alt={postedBy.fullName} 
+                          className="h-10 w-10 rounded-full object-cover mr-3" 
+                          onError={(e) => { e.target.onerror = null; e.target.src=`https://ui-avatars.com/api/?name=${postedBy.fullName}&background=cccccc&color=fff` }}
+                        />
                         <div>
-                            <p className="text-sm font-semibold text-gray-700">{postedBy.name}</p>
+                            <p className="text-sm font-semibold text-gray-700">{postedBy.fullName}</p>
+                            {/* Rating is not in the user model, so we can add a placeholder or remove it */}
                             <div className="flex items-center">
                                 <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                                <span className="text-xs text-gray-500">{postedBy.rating}</span>
+                                <span className="text-xs text-gray-500">4.5 (Sample)</span>
                             </div>
                         </div>
                     </div>
-                    {/* 3. Ensure this Link also uses the correct _id */}
-                    <Link to={`/rooms/${_id}`} className="bg-[#6b2184] text-white px-4 py-2 rounded-md text-sm font-semibold hover:brightness-90 transition-all">
+                    <Link to={`/rooms/${slug}`} className="bg-[#6b2184] text-white px-4 py-2 rounded-md text-sm font-semibold hover:brightness-90 transition-all">
                         View
                     </Link>
                 </div>

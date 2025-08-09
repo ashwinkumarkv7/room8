@@ -1,24 +1,173 @@
-import React from 'react';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import API_URL from '../apiConfig';
+import { PhotoIcon, XCircleIcon, PlusIcon } from '@heroicons/react/24/solid';
+
+// Reusable form components for a consistent look
+const Section = ({ title, description, children }) => (
+    <div className="py-8 border-b border-gray-200 last:border-b-0">
+        <div>
+            <h3 className="text-xl font-bold leading-6 text-gray-900">{title}</h3>
+            <p className="mt-1 text-sm text-gray-500">{description}</p>
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">{children}</div>
+    </div>
+);
+
+const FormField = ({ id, label, children, className = "sm:col-span-3" }) => (
+    <div className={className}>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+        <div className="mt-1">{children}</div>
+    </div>
+);
+
+const inputStyles = "block w-full rounded-lg border-2 border-gray-300 shadow-md focus:border-[#6A2083] focus:ring-4 focus:ring-[#6A2083]/20 sm:text-sm p-3 transition-all duration-200";
 
 export default function AddRoomPage() {
+  const { userInfo } = useAuth();
+  const navigate = useNavigate();
+  const [roomData, setRoomData] = useState({
+    title: '',
+    description: '',
+    city: '',
+    area: '',
+    price: '',
+    roomType: 'private',
+    features: [],
+  });
+  const [roomImageFiles, setRoomImageFiles] = useState([]);
+  const [roomImagePreviews, setRoomImagePreviews] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setRoomData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setRoomImageFiles(prev => [...prev, ...files]);
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setRoomImagePreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+  
+  const removeImage = (indexToRemove) => {
+      setRoomImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+      setRoomImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (roomImageFiles.length === 0) {
+        throw new Error("Please upload at least one image for the room.");
+      }
+
+      // Upload all images in parallel
+      const uploadPromises = roomImageFiles.map(file => {
+          const imageFormData = new FormData();
+          imageFormData.append('roomImages', file);
+          return fetch(`${API_URL}/api/upload/room-images`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${userInfo.token}` },
+              body: imageFormData,
+          }).then(res => res.json());
+      });
+      
+      const uploadResults = await Promise.all(uploadPromises);
+      const imageUrls = uploadResults.flatMap(result => result.imageUrls);
+
+      const finalRoomData = {
+        ...roomData,
+        imageUrls: imageUrls,
+      };
+
+      const createRoomRes = await fetch(`${API_URL}/api/rooms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`,
+        },
+        body: JSON.stringify(finalRoomData),
+      });
+
+      const newRoom = await createRoomRes.json();
+      if (!createRoomRes.ok) throw new Error(newRoom.message || 'Failed to create room');
+
+      alert('Room listed successfully!');
+      navigate(`/rooms/${newRoom.slug}`);
+
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to add room:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="bg-gray-50 flex-grow py-16">
-      <div className="container mx-auto px-4 text-center">
-        <PlusCircleIcon className="mx-auto h-16 w-16 text-gray-400" />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          Add Your Room
-        </h1>
-        <p className="mt-6 text-base leading-7 text-gray-600">
-          This is where the form to add a new room listing will go.
-        </p>
-        <div className="mt-10">
-          <a
-            href="#"
-            className="rounded-md bg-[#6b2184] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Get Started (Placeholder)
-          </a>
+    <div className="bg-gray-50 min-h-screen py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+          <h1 className="text-3xl font-bold text-gray-900">List Your Room</h1>
+          <p className="mt-2 text-gray-600">Fill out the details below to find your next roommate.</p>
+
+          <form onSubmit={handleSubmit} className="mt-8">
+            {error && <div className="mb-6 text-center text-sm text-red-600 bg-red-100 p-3 rounded-md">{error}</div>}
+
+            <Section title="Basic Information" description="Start with the essentials.">
+              <FormField id="title" label="Listing Title" className="sm:col-span-6">
+                <input type="text" name="title" value={roomData.title} onChange={handleInputChange} className={inputStyles} placeholder="e.g., Cozy Private Room in Kakkanad" required />
+              </FormField>
+              <FormField id="description" label="Description" className="sm:col-span-6">
+                <textarea name="description" rows={4} value={roomData.description} onChange={handleInputChange} className={inputStyles} placeholder="Describe your room, the apartment, and the neighborhood." required></textarea>
+              </FormField>
+            </Section>
+
+            <Section title="Location & Price" description="Where is the room and what is the rent?">
+              <FormField id="city" label="City"><input type="text" name="city" value={roomData.city} onChange={handleInputChange} className={inputStyles} required /></FormField>
+              <FormField id="area" label="Area / Locality"><input type="text" name="area" value={roomData.area} onChange={handleInputChange} className={inputStyles} required /></FormField>
+              <FormField id="price" label="Monthly Rent (₹)" className="sm:col-span-2"><input type="number" name="price" value={roomData.price} onChange={handleInputChange} className={inputStyles} required /></FormField>
+              <FormField id="roomType" label="Room Type" className="sm:col-span-4">
+                <select name="roomType" value={roomData.roomType} onChange={handleInputChange} className={inputStyles}><option value="private">Private</option><option value="shared">Shared</option></select>
+              </FormField>
+            </Section>
+
+            <Section title="Room Images" description="Upload multiple photos. The first image will be the main cover photo.">
+              <FormField label="Upload photos" className="sm:col-span-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {roomImagePreviews.map((previewUrl, index) => (
+                    <div key={index} className="relative aspect-square">
+                      <img src={previewUrl} alt={`Room preview ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
+                      <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-white/70 rounded-full p-0.5 text-gray-700 hover:text-red-600">
+                        <XCircleIcon className="h-6 w-6" />
+                      </button>
+                    </div>
+                  ))}
+                  <label htmlFor="roomImage" className="flex items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-[#6b2184] hover:text-[#6b2184] cursor-pointer transition-colors">
+                    <div className="text-center">
+                      <PlusIcon className="h-8 w-8 mx-auto" />
+                      <span className="mt-1 text-sm">Add photos</span>
+                    </div>
+                    <input id="roomImage" name="roomImage" type="file" accept="image/*" multiple onChange={handleFileChange} className="sr-only" />
+                  </label>
+                </div>
+              </FormField>
+            </Section>
+
+            <div className="pt-8 flex justify-end">
+              <button type="submit" disabled={loading} className="bg-[#6b2184] text-white px-8 py-3 rounded-lg font-semibold hover:brightness-90 disabled:opacity-50 text-base">
+                  {loading ? 'Listing Room...' : 'List My Room'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

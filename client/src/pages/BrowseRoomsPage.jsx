@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
-import ResultsGrid from '../components/ResultsGrid/ResultsGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
-import API_URL from '../apiConfig'; // 1. Import the API URL
+import ListingCard from '../components/FeaturedListings/ListingCard'; // 1. Import the correct ListingCard
+import API_URL from '../apiConfig';
 
 export default function BrowseRoomsPage() {
-  const [allListings, setAllListings] = useState([]); // Holds all rooms from the DB
-  const [filteredListings, setFilteredListings] = useState([]); // Holds the rooms to display
+  const [allListings, setAllListings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -25,19 +25,16 @@ export default function BrowseRoomsPage() {
   
   const location = useLocation();
 
-  // --- Fetch all room data from the server on initial load ---
+  // Fetch all room data from the server
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
-        // 2. Use the live server URL from the config file
         const response = await fetch(`${API_URL}/api/rooms`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch rooms');
-        }
+        if (!response.ok) throw new Error('Failed to fetch rooms');
         const data = await response.json();
         setAllListings(data);
-        setFilteredListings(data); // Initially, show all listings
+        setFilteredListings(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,9 +42,9 @@ export default function BrowseRoomsPage() {
       }
     };
     fetchRooms();
-  }, []); // Empty dependency array means this runs only once on mount
+  }, []);
 
-  // --- Pre-fill location filter if passed from Hero search ---
+  // Pre-fill location filter from Hero search
   useEffect(() => {
     if (location.state && location.state.location) {
       setFilters(prevFilters => ({
@@ -57,7 +54,7 @@ export default function BrowseRoomsPage() {
     }
   }, [location.state]);
 
-  // --- Apply filters whenever filters or search query change ---
+  // Apply filters when they change
   useEffect(() => {
     let results = allListings;
 
@@ -71,8 +68,8 @@ export default function BrowseRoomsPage() {
     
     if (filters.location) {
       results = results.filter(listing =>
-        listing.city.toLowerCase().includes(filters.location.toLowerCase()) ||
-        listing.area.toLowerCase().includes(filters.location.toLowerCase())
+        (listing.city && listing.city.toLowerCase().includes(filters.location.toLowerCase())) ||
+        (listing.area && listing.area.toLowerCase().includes(filters.location.toLowerCase()))
       );
     }
 
@@ -121,7 +118,16 @@ export default function BrowseRoomsPage() {
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : viewMode === 'grid' ? (
-              <ResultsGrid listings={filteredListings} />
+              // 2. Render the grid and ListingCard directly here
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredListings.length > 0 ? (
+                  filteredListings.map(listing => (
+                    <ListingCard key={listing._id} listing={listing} />
+                  ))
+                ) : (
+                  <p className="col-span-full text-center text-gray-500">No rooms found. Try adjusting your filters.</p>
+                )}
+              </div>
             ) : (
               <div className="h-[600px] bg-gray-300 rounded-lg flex items-center justify-center">
                 <p className="text-gray-600">Map View Placeholder</p>
