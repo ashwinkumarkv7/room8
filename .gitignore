@@ -40,6 +40,7 @@ build/
 .env.local
 .env.*.local
 /server/.env  # Explicitly ignore the server's .env file
+/client/.env
 
 # Logs
 npm-debug.log*

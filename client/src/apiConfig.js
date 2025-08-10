@@ -1,7 +1,7 @@
-// This file will hold the base URL for your API.
-// When developing locally, you can comment out the Render URL.
+// Change this:
+// const API_URL = 'https://room8-server.onrender.com';
 
-const API_URL = 'https://room8-server.onrender.com'; // Your live server URL
-// const API_URL = 'http://localhost:5000'; // Your local server URL
+// To this:
+const API_URL = 'http://localhost:5000';
 
 export default API_URL;

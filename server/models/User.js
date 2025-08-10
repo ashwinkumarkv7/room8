@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   dob: { type: String },
+  
+  // --- New Field ---
+  userRole: { type: String, required: true, enum: ['seeker', 'lister'] }, // seeker or lister
 
   // Profile Details from Onboarding
   city: { type: String, default: '' },

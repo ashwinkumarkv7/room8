@@ -3,19 +3,30 @@ const generateToken = require('../utils/generateToken');
 
 // --- Register a new user ---
 const registerUser = async (req, res) => {
-  const { fullName, email, password, dob } = req.body;
+  // Now accepts userRole from the frontend
+  const { fullName, email, password, dob, userRole } = req.body;
+
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    const user = await User.create({ fullName, email, password, dob });
+
+    const user = await User.create({
+      fullName,
+      email,
+      password,
+      dob,
+      userRole, // Save the user's role
+    });
+
     if (user) {
       res.status(201).json({
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
         profilePic: user.profilePic,
+        userRole: user.userRole, // Send the role back to the client
         token: generateToken(user._id),
       });
     } else {
@@ -38,6 +49,7 @@ const loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         profilePic: user.profilePic,
+        userRole: user.userRole, // Also send role on login
         token: generateToken(user._id),
       });
     } else {
@@ -56,7 +68,6 @@ const updateUserProfile = async (req, res) => {
 
     if (user) {
       // This logic checks if a field was included in the request and updates it.
-      // This correctly handles empty strings and ensures all data is saved.
       user.fullName = req.body.fullName ?? user.fullName;
       user.city = req.body.city ?? user.city;
       user.preferredLocation = req.body.preferredLocation ?? user.preferredLocation;

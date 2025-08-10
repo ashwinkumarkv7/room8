@@ -39,7 +39,6 @@ export default function ModernNavbar() {
   };
 
   return (
-    // 1. Added 'relative' to make this the positioning container
     <nav className="relative bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
@@ -78,7 +77,8 @@ export default function ModernNavbar() {
 
           <CustomNavLink to="/browse-roommates">Browse Roommates</CustomNavLink>
           {userInfo && <CustomNavLink to="/add-room">Add Room</CustomNavLink>}
-          <CustomNavLink to="/about">About</CustomNavLink>
+          {/* --- This link is now only shown if the user is NOT logged in --- */}
+          {!userInfo && <CustomNavLink to="/about">About</CustomNavLink>}
         </div>
 
         {/* Login/Signup OR Profile Dropdown */}
@@ -120,7 +120,6 @@ export default function ModernNavbar() {
 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        // 2. Made the dropdown absolute to overlay content below it
         <div className="absolute left-0 w-full md:hidden bg-white shadow-lg px-6 pb-6 pt-2 space-y-4">
           {userInfo ? (
             <Link to="/discover" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Discover</Link>
@@ -129,9 +128,11 @@ export default function ModernNavbar() {
           )}
           <Link to="/browse-rooms" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>All Rooms</Link>
           <Link to="/rooms/private" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Private Rooms</Link>
+          <Link to="/rooms/shared" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Shared Rooms</Link>
           <Link to="/browse-roommates" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Browse Roommates</Link>
           {userInfo && <Link to="/add-room" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>Add Room</Link>}
-          <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>About</Link>
+          {/* --- This link is also hidden in the mobile menu if logged in --- */}
+          {!userInfo && <Link to="/about" className="block text-gray-800 hover:text-[#6b2184] font-bold p-2" onClick={handleLinkClick}>About</Link>}
           <div className="border-t border-gray-200 pt-4 space-y-4">
             {userInfo ? (
                 <>
