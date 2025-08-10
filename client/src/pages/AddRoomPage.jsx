@@ -37,8 +37,8 @@ export default function AddRoomPage() {
     city: '',
     area: '',
     price: '',
-    roomType: 'private',
     features: [],
+    // roomType has been removed
   });
   const [roomImageFiles, setRoomImageFiles] = useState([]);
   const [roomImagePreviews, setRoomImagePreviews] = useState([]);
@@ -83,13 +83,11 @@ export default function AddRoomPage() {
         throw new Error("Please upload at least one image for the room.");
       }
 
-      // 1. Create a single FormData object for all images
       const imageFormData = new FormData();
       roomImageFiles.forEach(file => {
-          imageFormData.append('roomImages', file); // Use the same key for all files
+          imageFormData.append('roomImages', file);
       });
 
-      // 2. Send all images in ONE request to the server
       const uploadRes = await fetch(`${API_URL}/api/upload/room-images`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${userInfo.token}` },
@@ -98,7 +96,6 @@ export default function AddRoomPage() {
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.message || 'Image upload failed');
       
-      // 3. Create the room with the array of URLs returned by the server
       const finalRoomData = {
         ...roomData,
         imageUrls: uploadData.imageUrls,
@@ -149,12 +146,9 @@ export default function AddRoomPage() {
             <Section title="Location & Price" description="Where is the room and what is the rent?">
               <FormField id="city" label="City"><input type="text" name="city" value={roomData.city} onChange={handleInputChange} className={inputStyles} required /></FormField>
               <FormField id="area" label="Area / Locality"><input type="text" name="area" value={roomData.area} onChange={handleInputChange} className={inputStyles} required /></FormField>
-              <FormField id="price" label="Monthly Rent (₹)" className="sm:col-span-2"><input type="number" name="price" value={roomData.price} onChange={handleInputChange} className={inputStyles} required /></FormField>
-              <FormField id="roomType" label="Room Type" className="sm:col-span-4">
-                <select name="roomType" value={roomData.roomType} onChange={handleInputChange} className={inputStyles}><option value="private">Private</option><option value="shared">Shared</option></select>
-              </FormField>
+              <FormField id="price" label="Monthly Rent (₹)" className="sm:col-span-6"><input type="number" name="price" value={roomData.price} onChange={handleInputChange} className={inputStyles} required /></FormField>
             </Section>
-
+            
             <Section title="Amenities" description="Select all the amenities your place offers.">
                 <FormField className="sm:col-span-6">
                     <div className="flex flex-wrap gap-3">

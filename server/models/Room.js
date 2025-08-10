@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 
 const slugify = (text) => {
-  return text
-    .toString()
-    .toLowerCase()
+  return text.toString().toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^\w\-]+/g, '')
     .replace(/\-\-+/g, '-')
@@ -19,27 +17,13 @@ const roomSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   imageUrls: [{ type: String }],
   features: [{ type: String }],
-  roomType: { type: String },
   description: { type: String, default: '' },
-  
-  // --- New Field for Location Coordinates ---
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-    },
-    address: { type: String }
-  },
-
   postedBy: { 
     type: mongoose.Schema.Types.ObjectId, 
     required: true, 
     ref: 'User' 
   },
+  // The roomType and location fields have been removed
 }, {
   timestamps: true,
 });
