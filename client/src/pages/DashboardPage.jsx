@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar';
-import { SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
   const { userInfo } = useAuth();
@@ -14,7 +14,7 @@ export default function DashboardPage() {
 
   return (
     <div className={`min-h-screen font-sans ${isDarkMode ? 'bg-gray-900 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 lg:pb-8">
         
         {/* Header */}
         <header className="flex justify-between items-center mb-8">
@@ -25,7 +25,6 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            {/* Notification bell has been removed */}
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
               {isDarkMode ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />}
             </button>
@@ -47,11 +46,8 @@ export default function DashboardPage() {
           </main>
         </div>
 
-        {/* Floating Action Button */}
-        <button className="fixed bottom-8 right-8 bg-[#6b2184] text-white p-4 rounded-full shadow-lg hover:bg-purple-800 transition-colors">
-          <PlusIcon className="h-6 w-6" />
-          <span className="sr-only">New Action</span>
-        </button>
+        {/* Floating Action Button has been removed from here */}
+        
       </div>
     </div>
   );

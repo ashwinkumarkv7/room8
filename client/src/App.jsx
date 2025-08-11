@@ -1,7 +1,7 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom'; // 1. Import useLocation
 import { AuthProvider } from './context/AuthContext';
-import { SocketProvider } from './context/SocketContext'; // <-- 1. Import the SocketProvider
+import { SocketProvider } from './context/SocketContext';
 
 // --- Shared Components ---
 import ModernNavbar from './components/Navbar/ModernNavbar';
@@ -26,8 +26,8 @@ import SharedRoomsPage from './pages/SharedRoomsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MyProfile from './components/Dashboard/MyProfile'; 
 import AccountSettings from './components/Dashboard/AccountSettings';
-import MessagesPage from './components/Messages/MessagesPage'; // <-- Import the new Messages page
-import ChatWindow from './components/Messages/ChatWindow';   // <-- Import the ChatWindow
+import MessagesPage from './components/Messages/MessagesPage';
+import ChatWindow from './components/Messages/ChatWindow';
 
 // --- Placeholder Components for future pages ---
 const Favorites = () => <h2 className="text-xl font-bold">My Favorites</h2>;
@@ -39,9 +39,13 @@ const SelectConversation = () => (
 
 
 function App() {
+  const location = useLocation(); // 2. Get the current location object
+
+  // 3. This condition checks if the current URL path starts with '/dashboard'
+  const showFooter = !location.pathname.startsWith('/dashboard');
+
   return (
     <AuthProvider>
-      {/* 2. Wrap the app with SocketProvider, inside AuthProvider */}
       <SocketProvider>
         <div className="flex flex-col min-h-screen">
           <ModernNavbar />
@@ -66,7 +70,6 @@ function App() {
                 <Route path="/add-room" element={<AddRoomPage />} />
                 <Route path="/dashboard" element={<DashboardPage />}>
                   <Route index element={<MyProfile />} /> 
-                  {/* 3. Add the new nested routes for the messages page */}
                   <Route path="messages" element={<MessagesPage />}>
                       <Route index element={<SelectConversation />} />
                       <Route path=":conversationId" element={<ChatWindow />} />
@@ -78,7 +81,8 @@ function App() {
             </Routes>
           </main>
           
-          <Footer />
+          {/* 4. The Footer is now only rendered if showFooter is true */}
+          {showFooter && <Footer />}
         </div>
       </SocketProvider>
     </AuthProvider>

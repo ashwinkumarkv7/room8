@@ -34,13 +34,12 @@ export default function MessagesPage() {
 
   return (
     <div className="flex h-full">
-      {/* --- This section is now responsive --- */}
-      {/* On mobile, it's hidden if a conversation is selected */}
-      <aside className={`w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 ${conversationId ? 'hidden md:block' : 'block'}`}>
+      {/* --- This is the corrected line --- */}
+      {/* The border is now only applied on medium screens and up (md:border-r) */}
+      <aside className={`w-full md:w-1/3 md:border-r border-gray-200 dark:border-gray-700 ${conversationId ? 'hidden md:block' : 'block'}`}>
         <ConversationList conversations={conversations} loading={loading} />
       </aside>
 
-      {/* On mobile, this takes up the full screen when a conversation is selected */}
       <main className={`w-full md:w-2/3 flex-col ${conversationId ? 'flex' : 'hidden md:flex'}`}>
         <Outlet />
       </main>
