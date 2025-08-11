@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { UserCircleIcon, CalendarDaysIcon, HeartIcon, BellIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, HeartIcon, Cog6ToothIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
 
 const DashboardNavLink = ({ to, icon: Icon, children }) => (
   <NavLink
@@ -23,9 +23,8 @@ export default function DashboardSidebar() {
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md space-y-2">
       <DashboardNavLink to="/dashboard" icon={UserCircleIcon}>My Profile</DashboardNavLink>
-      <DashboardNavLink to="/dashboard/bookings" icon={CalendarDaysIcon}>My Bookings</DashboardNavLink>
+      <DashboardNavLink to="/dashboard/messages" icon={ChatBubbleOvalLeftEllipsisIcon}>Messages</DashboardNavLink>
       <DashboardNavLink to="/dashboard/favorites" icon={HeartIcon}>Favorites</DashboardNavLink>
-      <DashboardNavLink to="/dashboard/notifications" icon={BellIcon}>Notifications</DashboardNavLink>
       <DashboardNavLink to="/dashboard/settings" icon={Cog6ToothIcon}>Account Settings</DashboardNavLink>
     </div>
   );

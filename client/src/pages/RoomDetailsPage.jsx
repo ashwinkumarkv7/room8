@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useAuth } from '../context/AuthContext'; // 2. Import useAuth
 import API_URL from '../apiConfig';
 import { MapPinIcon, StarIcon, SparklesIcon, UserGroupIcon, ClockIcon, NoSymbolIcon } from '@heroicons/react/24/solid';
 
@@ -54,6 +55,8 @@ export default function RoomDetailsPage() {
   const [error, setError] = useState(null);
   const { slug } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
+  const { userInfo } = useAuth(); // 3. Get the current user's info
+  const navigate = useNavigate(); // 4. Initialize navigate function
 
   useEffect(() => {
     const fetchRoomDetails = async () => {
@@ -64,9 +67,6 @@ export default function RoomDetailsPage() {
         const data = await response.json();
         setRoom(data);
         
-        // --- This is the corrected logic ---
-        // It now checks for the new 'imageUrls' array first,
-        // then falls back to the old 'imageUrl' string.
         if (data.imageUrls && data.imageUrls.length > 0) {
             setSelectedImage(data.imageUrls[0]);
         } else if (data.imageUrl) {
@@ -84,6 +84,38 @@ export default function RoomDetailsPage() {
     }
   }, [slug]);
 
+  // --- 5. New handler for the "Request to Connect" button ---
+  const handleConnect = async () => {
+    if (!userInfo) {
+      // If user is not logged in, redirect them to the login page
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/conversations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`,
+        },
+        body: JSON.stringify({ recipientId: room.postedBy._id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start conversation');
+      }
+
+      const newConversation = await response.json();
+      // Redirect to the new chat in the messages dashboard
+      navigate(`/dashboard/messages/${newConversation._id}`);
+
+    } catch (error) {
+      console.error(error);
+      alert('Could not start a conversation. Please try again.');
+    }
+  };
+
   if (loading) return <div className="text-center py-20">Loading room details...</div>;
   if (error) return <div className="text-center py-20 text-red-500">Error: {error}</div>;
   if (!room) return <div className="text-center py-20">Room not found.</div>;
@@ -98,7 +130,6 @@ export default function RoomDetailsPage() {
                 alt={room.title} 
                 className="w-full h-[500px] object-cover rounded-2xl shadow-lg mb-4" 
             />
-            {/* The thumbnail gallery will only show for new listings with multiple images */}
             {room.imageUrls && room.imageUrls.length > 1 && (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
                     {room.imageUrls.map((url, index) => (
@@ -153,7 +184,12 @@ export default function RoomDetailsPage() {
               ) : (
                 <p>Lister information not available.</p>
               )}
-              <button className="mt-6 w-full bg-[#6b2184] text-white py-3 rounded-lg font-semibold text-lg hover:brightness-90 transition-all">
+              
+              {/* 6. Attach the handler to the button's onClick event */}
+              <button 
+                onClick={handleConnect}
+                className="mt-6 w-full bg-[#6b2184] text-white py-3 rounded-lg font-semibold text-lg hover:brightness-90 transition-all"
+              >
                 Request to Connect
               </button>
             </div>

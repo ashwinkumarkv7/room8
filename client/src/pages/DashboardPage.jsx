@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardSidebar from '../components/Dashboard/DashboardSidebar';
-import { BellIcon, SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { SunIcon, MoonIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
   const { userInfo } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(false); // State for theme toggle
-
-  // In a real app, you would fetch user-specific data here
-  const upcomingBookingsCount = 2; // Sample data
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   if (!userInfo) {
-    return <div>Loading...</div>; // Or a spinner component
+    return <div>Loading...</div>;
   }
 
   return (
@@ -24,14 +21,11 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-2xl font-bold">Welcome back, {userInfo.fullName.split(' ')[0]} 👋</h1>
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              You have {upcomingBookingsCount} upcoming bookings.
+              Manage your profile and connections.
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-              <BellIcon className="h-6 w-6" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-            </button>
+            {/* Notification bell has been removed */}
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
               {isDarkMode ? <SunIcon className="h-6 w-6" /> : <MoonIcon className="h-6 w-6" />}
             </button>
@@ -47,15 +41,16 @@ export default function DashboardPage() {
 
           {/* Right Content Area */}
           <main className="w-full lg:w-3/4 xl:w-4/5">
-            {/* The nested route components (MyProfile, etc.) will be rendered here */}
-            <Outlet />
+            <div className={`p-8 rounded-2xl shadow-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <Outlet />
+            </div>
           </main>
         </div>
 
         {/* Floating Action Button */}
         <button className="fixed bottom-8 right-8 bg-[#6b2184] text-white p-4 rounded-full shadow-lg hover:bg-purple-800 transition-colors">
           <PlusIcon className="h-6 w-6" />
-          <span className="sr-only">New Booking</span>
+          <span className="sr-only">New Action</span>
         </button>
       </div>
     </div>
