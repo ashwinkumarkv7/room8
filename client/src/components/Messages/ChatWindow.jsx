@@ -13,6 +13,7 @@ export default function ChatWindow() {
   const socket = useSocket();
   const { userInfo } = useAuth();
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null); // Ref for the scrollable area
 
   useEffect(() => {
     if (!conversationId || !userInfo) return;
@@ -61,8 +62,11 @@ export default function ChatWindow() {
     }
   }, [socket, conversationId, userInfo]);
   
+  // This effect now correctly scrolls only the chat container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSendMessage = (e) => {
@@ -81,8 +85,8 @@ export default function ChatWindow() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* --- New Mobile Header --- */}
-      <div className="md:hidden p-4 border-b flex items-center space-x-4">
+      {/* --- Mobile Header --- */}
+      <div className="md:hidden p-4 border-b flex items-center space-x-4 flex-shrink-0">
         <Link to="/dashboard/messages" className="text-gray-600">
           <ArrowLeftIcon className="h-6 w-6" />
         </Link>
@@ -95,7 +99,7 @@ export default function ChatWindow() {
       </div>
 
       {/* Message Display Area */}
-      <div className="flex-grow p-6 overflow-y-auto">
+      <div ref={chatContainerRef} className="flex-grow p-6 overflow-y-auto">
         <div className="space-y-4">
           {messages.map((msg, index) => (
             <div key={index} className={`flex ${msg.sender === userInfo._id ? 'justify-end' : 'justify-start'}`}>
@@ -109,7 +113,7 @@ export default function ChatWindow() {
       </div>
 
       {/* Message Input Area */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 flex-shrink-0">
         <form onSubmit={handleSendMessage} className="relative">
           <input
             type="text"

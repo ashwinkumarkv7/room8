@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Outlet } from 'react-router-dom';
 import ConversationList from './ConversationList';
-import ChatWindow from './ChatWindow';
 import { useAuth } from '../../context/AuthContext';
 import API_URL from '../../apiConfig';
 

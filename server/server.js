@@ -32,7 +32,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://your-deployed-client-url.com"],
+    origin: ["http://localhost:5173", "https://room8-server.onrender.com"],
     methods: ["GET", "POST"]
   }
 });
