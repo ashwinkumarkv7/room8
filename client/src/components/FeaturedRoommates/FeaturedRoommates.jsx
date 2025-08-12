@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RoommateCard from '../RoommateCard/RoommateCard';
-import API_URL from '../../apiConfig'; // 1. Import the API URL
+import API_URL from '../../apiConfig';
+// 1. Import the skeleton component
+import RoommateCardSkeleton from '../skeletons/RoommateCardSkeleton';
 
 export default function FeaturedRoommates() {
   const [roommates, setRoommates] = useState([]);
@@ -12,7 +14,6 @@ export default function FeaturedRoommates() {
     const fetchFeaturedRoommates = async () => {
       try {
         setLoading(true);
-        // 2. Use the live server URL from the config file
         const response = await fetch(`${API_URL}/api/users`);
         if (!response.ok) {
           throw new Error('Failed to fetch roommates');
@@ -39,16 +40,25 @@ export default function FeaturedRoommates() {
         </Link>
       </div>
 
-      {loading && <p>Loading roommates...</p>}
+      {/* 2. Updated loading and error handling logic */}
       {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {roommates.map(person => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {loading ? (
+          // If loading, show 4 skeleton cards
+          <>
+            <RoommateCardSkeleton />
+            <RoommateCardSkeleton />
+            <RoommateCardSkeleton />
+            <RoommateCardSkeleton />
+          </>
+        ) : (
+          // Otherwise, show the actual roommate cards
+          roommates.map(person => (
             <RoommateCard key={person._id} person={person} />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </section>
   );
 }

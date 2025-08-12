@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import RoommateFilterSidebar from '../components/RoommateFilterSidebar/RoommateFilterSidebar';
-import RoommateGrid from '../components/RoommateGrid/RoommateGrid';
 import SearchBar from '../components/SearchBar/SearchBar';
-import API_URL from '../apiConfig'; // 1. Import the API URL
+import RoommateCard from '../components/RoommateCard/RoommateCard'; // Import the real card
+import RoommateCardSkeleton from '../components/skeletons/RoommateCardSkeleton'; // 1. Import the skeleton
+import API_URL from '../apiConfig';
 
 export default function BrowseRoommatesPage() {
   const [allRoommates, setAllRoommates] = useState([]);
@@ -22,12 +23,10 @@ export default function BrowseRoommatesPage() {
   
   const location = useLocation();
 
-  // Fetch all user data from the server on initial load
   useEffect(() => {
     const fetchRoommates = async () => {
       try {
         setLoading(true);
-        // 2. Use the live server URL from the config file
         const response = await fetch(`${API_URL}/api/users`);
         if (!response.ok) throw new Error('Failed to fetch roommates');
         const data = await response.json();
@@ -42,7 +41,7 @@ export default function BrowseRoommatesPage() {
     fetchRoommates();
   }, []);
 
-  // Pre-fill location filter if passed from Hero search
+  // Pre-fill location filter from Hero search
   useEffect(() => {
     if (location.state && location.state.location) {
       setFilters(prevFilters => ({
@@ -58,7 +57,7 @@ export default function BrowseRoommatesPage() {
 
     results = results.filter(p => {
         const searchMatch = !searchQuery || 
-            p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.fullName && p.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (p.profession && p.profession.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (p.city && p.city.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -87,12 +86,23 @@ export default function BrowseRoommatesPage() {
           </aside>
           
           <main className="w-full md:w-3/4 lg:w-4/5">
-            {loading ? (
-              <p>Loading roommates...</p>
-            ) : error ? (
+            {error ? (
               <p className="text-red-500">{error}</p>
             ) : (
-              <RoommateGrid roommates={filteredRoommates} />
+              // 2. This is the updated rendering logic
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {loading ? (
+                  // If loading, show a grid of 6 skeleton cards
+                  Array.from({ length: 6 }).map((_, index) => <RoommateCardSkeleton key={index} />)
+                ) : (
+                  // Otherwise, show the real data or a 'not found' message
+                  filteredRoommates.length > 0 ? (
+                    filteredRoommates.map(person => <RoommateCard key={person._id} person={person} />)
+                  ) : (
+                    <p className="col-span-full text-center text-gray-500">No roommates found. Try adjusting your filters.</p>
+                  )
+                )}
+              </div>
             )}
           </main>
         </div>

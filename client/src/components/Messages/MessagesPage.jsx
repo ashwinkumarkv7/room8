@@ -34,12 +34,13 @@ export default function MessagesPage() {
 
   return (
     <div className="flex h-full">
-      {/* --- This is the corrected line --- */}
-      {/* The border is now only applied on medium screens and up (md:border-r) */}
-      <aside className={`w-full md:w-1/3 md:border-r border-gray-200 dark:border-gray-700 ${conversationId ? 'hidden md:block' : 'block'}`}>
+      {/* --- Conversation List Container --- */}
+      <aside className={`w-full md:w-1/3 md:border-r border-gray-200 dark:border-gray-700 flex flex-col ${conversationId ? 'hidden md:flex' : 'flex'}`}>
+        {/* The mobile header has been removed from here. */}
         <ConversationList conversations={conversations} loading={loading} />
       </aside>
 
+      {/* --- Chat Window Container --- */}
       <main className={`w-full md:w-2/3 flex-col ${conversationId ? 'flex' : 'hidden md:flex'}`}>
         <Outlet />
       </main>

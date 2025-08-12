@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import SearchBar from '../components/SearchBar/SearchBar';
-import ListingCard from '../components/FeaturedListings/ListingCard'; // Using the correct, robust ListingCard
+import ListingCard from '../components/FeaturedListings/ListingCard';
+import ListingCardSkeleton from '../components/skeletons/ListingCardSkeleton'; // 1. Import the skeleton
 import MapView from '../components/MapView/MapView';
 import API_URL from '../apiConfig';
 
@@ -26,6 +27,7 @@ export default function BrowseRoomsPage() {
   
   const location = useLocation();
 
+  // Fetch all room data from the server
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -44,6 +46,7 @@ export default function BrowseRoomsPage() {
     fetchRooms();
   }, []);
 
+  // Pre-fill location filter from Hero search
   useEffect(() => {
     if (location.state && location.state.location) {
       setFilters(prevFilters => ({
@@ -53,11 +56,10 @@ export default function BrowseRoomsPage() {
     }
   }, [location.state]);
 
-  // --- This is the updated, more robust filtering logic ---
+  // Apply filters when they change
   useEffect(() => {
     let results = allListings;
 
-    // Filter by Search Query (safe check)
     if (searchQuery) {
       results = results.filter(listing =>
         (listing.title && listing.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -66,7 +68,6 @@ export default function BrowseRoomsPage() {
       );
     }
     
-    // Filter by Location (safe check)
     if (filters.location) {
       results = results.filter(listing =>
         (listing.city && listing.city.toLowerCase().includes(filters.location.toLowerCase())) ||
@@ -74,28 +75,24 @@ export default function BrowseRoomsPage() {
       );
     }
 
-    // Filter by Budget (safe check)
     results = results.filter(listing => listing.price ? listing.price <= filters.budget : true);
 
-    // Filter by Room Type (safe check)
     if (filters.roomType !== 'any') {
       results = results.filter(listing => listing.roomType === filters.roomType);
     }
 
-    // Filter by Furnishing (safe check)
     if (filters.furnishing !== 'any') {
-      results = results.filter(listing => listing.furnishing === filters.furnishing);
+        results = results.filter(listing => listing.furnishing === filters.furnishing);
     }
-
-    // Filter by Booleans (safe check)
+    
     if (filters.petFriendly) {
-      results = results.filter(listing => listing.petFriendly === true);
+        results = results.filter(listing => listing.petFriendly === true);
     }
     if (filters.internet) {
-      results = results.filter(listing => listing.internet === true);
+        results = results.filter(listing => listing.internet === true);
     }
     if (filters.verified) {
-      results = results.filter(listing => listing.verified === true);
+        results = results.filter(listing => listing.verified === true);
     }
 
     setFilteredListings(results);
@@ -118,22 +115,25 @@ export default function BrowseRoomsPage() {
           </aside>
           
           <main className="w-full md:w-3/4 lg:w-4/5">
-            {loading ? (
-              <p>Loading rooms...</p>
-            ) : error ? (
+            {error ? (
               <p className="text-red-500">{error}</p>
             ) : viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredListings.length > 0 ? (
-                  filteredListings.map(listing => (
-                    <ListingCard key={listing._id} listing={listing} />
-                  ))
+                {loading ? (
+                  // 2. If loading, show a grid of 6 skeleton cards
+                  Array.from({ length: 6 }).map((_, index) => <ListingCardSkeleton key={index} />)
                 ) : (
-                  <p className="col-span-full text-center text-gray-500">No rooms found. Try adjusting your filters.</p>
+                  // Otherwise, show the real data or a 'not found' message
+                  filteredListings.length > 0 ? (
+                    filteredListings.map(listing => <ListingCard key={listing._id} listing={listing} />)
+                  ) : (
+                    <p className="col-span-full text-center text-gray-500">No rooms found. Try adjusting your filters.</p>
+                  )
                 )}
               </div>
             ) : (
-              <MapView listings={filteredListings} />
+              // Also handle loading for MapView
+              loading ? <Skeleton height={600} borderRadius={12} /> : <MapView listings={filteredListings} />
             )}
           </main>
         </div>
